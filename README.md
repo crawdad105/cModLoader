@@ -23,16 +23,16 @@ cModLoader is in active development, currently only 1 person has a very early be
 It currently works in versions 0.1 to 1.0.6.1 on windows (im working my way up) but i want to get it working on Linux before adding any other features. 
 Adding Linux support shouldn't be too hard, it works fine with Win but Terraria runs using Steam's Proton which means i need it to work with Proton which has different features. For example System.Windows.Froms works fine in Wine but Proton does not support it, although Terraria is shipped with it, its barely uses, they actually use a custom implementation of MessageBox.Show using SDL3. Because i want cModLoader to work flawlessly everywhere on every versions i need to implement a way to get a Windows form like form in Linux without using windows form using SDL3 because that's shipped with Terraria. I also need it to work with the same code as windows forms so the modder can create a window without writing a bunch of other code for 2 different platforms.
 
-Full Support: ✅
-Partial Support: ☑️
-Not Tested: ✴️ Not tested by likely works
-In Development: 🛠️
-No Support: ❌ (Currently)
-IDK if this versions exists: ❔(I'm too lazy to find out)
-Versions Probably Doesn't exist: ❓(that aren't public available)
-Out Of Date: ➖ Version didn't exist officially on this platform
-Steam Version: s Versions downloadable through steam
-Hotfix Versions numbers: ^n^ Versions that are likely hotfixes that are slightly different but the same version
+Full Support: ✅<br>
+Partial Support: ☑️<br>
+Not Tested: ✴️ Not tested by likely works<br>
+In Development: 🛠️<br>
+No Support: ❌ (Currently)<br>
+IDK if this versions exists: ❔(I'm too lazy to find out)<br>
+Versions Probably Doesn't exist: ❓(that aren't public available)<br>
+Out Of Date: ➖ Version didn't exist officially on this platform<br>
+Steam Version: s Versions downloadable through steam<br>
+Hotfix Versions numbers: <sup>n</sup> Versions that are likely hotfixes that are slightly different but the same version<br>
 
 | Versions | Windows | Linux | macOS |
 |:-------- |:------: | :---: | :----: |
@@ -52,13 +52,15 @@ Hotfix Versions numbers: ^n^ Versions that are likely hotfixes that are slightly
 | 1.0.6.1 | ✅ | ➖ | ➖ |
 | s1.0.6.1 | ✴️ | 🛠️ | ❌ |
 | |  |  |  |
-| 1.4.4.9^1^* | ✴️ | ❌ | ❌ |
-| 1.4.4.9^2^* | ✴️ | ❔ | ❔ |
-| 1.4.4.9^3^* | ✅ | ❔ | ❔ |
+| 1.4.4.9<sup>1</sup>* | ✴️ | ❌ | ❌ |
+| 1.4.4.9<sup>2</sup>* | ✴️ | ❔ | ❔ |
+| 1.4.4.9<sup>3</sup>* | ✅ | ❔ | ❔ |
 | 1.4.5* | ✅ | ❌ | ❌ |
 | 1.4.5.1* | ✅ | ❌ | ❌ |
 | 1.4.5.2* | ✅ | ❌ | ❌ |
 | 1.4.5.3* | ✅ | ❌ | ❌ |
 | 1.4.5.4* | ✅ | ❌ | ❌ |
 | 1.4.5.5* | ✅ | ❌ | ❌ |
+
+
 \* Working in older versions, but might not in the newer verions
