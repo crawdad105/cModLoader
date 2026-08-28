@@ -1,0 +1,15 @@
+# ignore build data
+[Bb]in/
+[Oo]bj/
+# ignore publish, its not used but its there
+[Pp]ublish/
+*.pubxml
+*.publishproj
+# ignore visual stuiods
+.vs/
+# ignore user files
+*.user
+# ignore key, not sure what its used for
+*.pfx
+# ignore other folders because i dont know whats in them
+_*/
