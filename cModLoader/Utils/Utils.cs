@@ -21,6 +21,8 @@ namespace cModLoader.Utils {
         public static object CreateInstance(this Type type) => Activator.CreateInstance(type);
         /// <summary> Create a <see cref="Dynamic"/> instance of <paramref name="type"/>.</summary>
         public static Dynamic CreateDynamicInstance(this Type type) => new Dynamic(Activator.CreateInstance(type));
+        /// <summary> Create a <see cref="Dynamic"/> instance of <paramref name="type"/> with <paramref name="parameters"/>.</summary>
+        public static Dynamic CreateDynamicInstance(this Type type, params object[] parameters) => new Dynamic(Activator.CreateInstance(type, parameters));
     }
 
     /// <summary>

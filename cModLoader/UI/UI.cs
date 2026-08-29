@@ -460,28 +460,31 @@ namespace cModLoader.UI {
             native = nativeElement;
         }
     }
-    /// <summary>cModLoader specific UI wrapper. This wraps Terraria's UIPanel for modern UI and <see cref="LegacyUIContainer"/> for legacy UI. <br/>Not the same as Terraria's UITextPanel, this is specifically used for cModLoader as a wrapper </summary>
-    public class cUIPanel : cUIElement {
-
+    /// <summary>cModLoader specific UI wrapper. This wraps Terraria's UIElement but simulates UIPanel for modern UI and <see cref="LegacyUIContainer"/> for legacy UI. <br/>Not the same as Terraria's UITextPanel, this is specifically used for cModLoader as a wrapper </summary>
+    public class cUIPanel : cUIElementOverride {
+        public Texture2D _borderTexture = null;
+        public Texture2D _backgroundTexture = null;
         /// <summary> Draws a panel using <paramref name="texture"/>. This is copied from Terraria's UIPanel.<br/>Leave <paramref name="color"/> <see langword="null"/> for <see cref="Color.White"/>.</summary>
-        public static void DrawPanel(cUIElement element, SpriteBatch spriteBatch, Texture2D texture, Color? color = null, int cornerSize = 12, int sideSize = 4) {
-            var _color = color ?? Color.White;
-            RectangleF dimensions = element.GetDimensions();
+        public static void DrawPanel(cUIElement element, SpriteBatch spriteBatch, Texture2D texture, Color? _color = null, int _cornerSize = 12, int _barSize = 4) {
+            var color = _color ?? Color.White;
+
+            var dimensions = element.GetDimensions();
             Point point = new Point((int)dimensions.X, (int)dimensions.Y);
-            Point point2 = new Point(point.X + (int)dimensions.Width - cornerSize, point.Y + (int)dimensions.Height - cornerSize);
-            int width = point2.X - point.X - cornerSize;
-            int height = point2.Y - point.Y - cornerSize;
-            spriteBatch.Draw(texture, new Rectangle(point.X, point.Y, cornerSize, cornerSize), new Rectangle(0, 0, cornerSize, cornerSize), _color);
-            spriteBatch.Draw(texture, new Rectangle(point2.X, point.Y, cornerSize, cornerSize), new Rectangle(cornerSize + sideSize, 0, cornerSize, cornerSize), _color);
-            spriteBatch.Draw(texture, new Rectangle(point.X, point2.Y, cornerSize, cornerSize), new Rectangle(0, cornerSize + sideSize, cornerSize, cornerSize), _color);
-            spriteBatch.Draw(texture, new Rectangle(point2.X, point2.Y, cornerSize, cornerSize), new Rectangle(cornerSize + sideSize, cornerSize + sideSize, cornerSize, cornerSize), _color);
-            spriteBatch.Draw(texture, new Rectangle(point.X + cornerSize, point.Y, width, cornerSize), new Rectangle(cornerSize, 0, sideSize, cornerSize), _color);
-            spriteBatch.Draw(texture, new Rectangle(point.X + cornerSize, point2.Y, width, cornerSize), new Rectangle(cornerSize, cornerSize + sideSize, sideSize, cornerSize), _color);
-            spriteBatch.Draw(texture, new Rectangle(point.X, point.Y + cornerSize, cornerSize, height), new Rectangle(0, cornerSize, cornerSize, sideSize), _color);
-            spriteBatch.Draw(texture, new Rectangle(point2.X, point.Y + cornerSize, cornerSize, height), new Rectangle(cornerSize + sideSize, cornerSize, cornerSize, sideSize), _color);
-            spriteBatch.Draw(texture, new Rectangle(point.X + cornerSize, point.Y + cornerSize, width, height), new Rectangle(cornerSize, cornerSize, sideSize, sideSize), _color);
+            Point point2 = new Point(point.X + (int)dimensions.Width - _cornerSize, point.Y + (int)dimensions.Height - _cornerSize);
+            int width = point2.X - point.X - _cornerSize;
+            int height = point2.Y - point.Y - _cornerSize;
+            spriteBatch.Draw(texture, new Rectangle(point.X, point.Y, _cornerSize, _cornerSize), new Rectangle(0, 0, _cornerSize, _cornerSize), color);
+            spriteBatch.Draw(texture, new Rectangle(point2.X, point.Y, _cornerSize, _cornerSize), new Rectangle(_cornerSize + _barSize, 0, _cornerSize, _cornerSize), color);
+            spriteBatch.Draw(texture, new Rectangle(point.X, point2.Y, _cornerSize, _cornerSize), new Rectangle(0, _cornerSize + _barSize, _cornerSize, _cornerSize), color);
+            spriteBatch.Draw(texture, new Rectangle(point2.X, point2.Y, _cornerSize, _cornerSize), new Rectangle(_cornerSize + _barSize, _cornerSize + _barSize, _cornerSize, _cornerSize), color);
+            spriteBatch.Draw(texture, new Rectangle(point.X + _cornerSize, point.Y, width, _cornerSize), new Rectangle(_cornerSize, 0, _barSize, _cornerSize), color);
+            spriteBatch.Draw(texture, new Rectangle(point.X + _cornerSize, point2.Y, width, _cornerSize), new Rectangle(_cornerSize, _cornerSize + _barSize, _barSize, _cornerSize), color);
+            spriteBatch.Draw(texture, new Rectangle(point.X, point.Y + _cornerSize, _cornerSize, height), new Rectangle(0, _cornerSize, _cornerSize, _barSize), color);
+            spriteBatch.Draw(texture, new Rectangle(point2.X, point.Y + _cornerSize, _cornerSize, height), new Rectangle(_cornerSize + _barSize, _cornerSize, _cornerSize, _barSize), color);
+            spriteBatch.Draw(texture, new Rectangle(point.X + _cornerSize, point.Y + _cornerSize, width, height), new Rectangle(_cornerSize, _cornerSize, _barSize, _barSize), color);
         }
 
+        /*
         /// <summary> Modern UI: Gets or sets Terraria's UIPanel.BackgroundColor<br/>Legacy UI: Does nothing for now.</summary>
         public Color BackgroundColor {
             get {
@@ -504,14 +507,28 @@ namespace cModLoader.UI {
                 ModernNative.SetValue<Color>("BorderColor", value);
             }
         }
+        */
+        public Color BackgroundColor = Terraria.Colour.UIBackgroundTransparent;
+        public Color BorderColor = Color.Black;
 
-        public cUIPanel(bool create = true) {
-            if (create) {
-                if (!IsLegacy)
-                    native = UIUtils.ModernReferences.UIPanel_Reference.New();
-                else
-                    native = new LegacyUIContainer();
+        public cUIPanel() : base() {
+            if (_borderTexture == null) {
+                if (Terraria.VersionChecks.Using_RelogicAssets)
+                    _borderTexture = Terraria.Relogic.Asset<Texture2D>("Images/UI/PanelBorder").Value;
+                else _borderTexture = Terraria.Textures.LoadTexture("Images/UI/PanelBorder");
             }
+            if (_backgroundTexture == null) {
+                if (Terraria.VersionChecks.Using_RelogicAssets)
+                    _backgroundTexture = Terraria.Relogic.Asset<Texture2D>("Images/UI/PanelBackground").Value;
+                else _backgroundTexture = Terraria.Textures.LoadTexture("Images/UI/PanelBackground");
+            }
+            SetPadding(12f);
+            //native = IsLegacy ? new LegacyUIContainer() : UIUtils.ModernReferences.UIPanel_Reference.New();
+            if (!IsLegacy) DrawSelf += _DrawSelf;
+        }
+        protected virtual void _DrawSelf(SpriteBatch sb) {
+            DrawPanel(this, sb, _backgroundTexture, BackgroundColor);
+            DrawPanel(this, sb, _borderTexture, BorderColor);
         }
     }
     /// <summary>cModLoader specific UI wrapper. This wraps Terraria's UITextPanel for modern UI and <see cref="LegacyUIText"/> for legacy UI.<br/>T (<typeparamref name="T"/>) must be a <see cref="string"/> in all versions below 1.3.4 otherwise idk what happens. <br/>Not the same as Terraria's UITextPanel, this is specifically used for cModLoader as a wrapper </summary>
@@ -583,7 +600,7 @@ namespace cModLoader.UI {
             }
         }
 
-        public cUITextPanel(T text, float scale, bool big, bool isButton = false) : base(false) {
+        public cUITextPanel(T text, float scale, bool big, bool isButton = false) : base() {
             if (!IsLegacy) {
                 native = UIUtils.ModernReferences.UITextPanel_Reference.New(text, scale, big);
                 BackgroundColor = isButton ? Terraria.Colour.UIBackgroundTransparent : Terraria.Colour.UIBackgroundSolid;
@@ -659,6 +676,14 @@ namespace cModLoader.UI {
     }
     /// <summary>cModLoader specific UI wrapper. This wraps Terraria's UIPanel for modern UI and <see cref="LegacyUIContainer"/> for legacy UI. <br/>Not the same as Terraria's UITextPanel, this is specifically used for cModLoader as a wrapper </summary>
     public class cUIList : cUIElement {
+        /// <summary>
+        /// The <see cref="cUIList"/> wrapper children, this is not the native object's children, although you could obtain it through this.<br/>
+        /// If the native objects children are changed manually this will not update.
+        /// <para>
+        /// This is modified through <see cref="Add(cUIElement)"/> and <see cref="Remove(cUIElement)"/>
+        /// </para>
+        /// </summary>
+        public List<cUIElement> WrapperListItems = new List<cUIElement>();
         /// <summary> Modern UI: Modifies Terraria's UIElement.ListPadding<br/>Legacy UI: Does the same as modern but for <see cref="LegacyUIContainer"/></summary>
         public float ListPadding {
             get {
@@ -687,13 +712,25 @@ namespace cModLoader.UI {
         /// <summary> Adds an element to the scroll list. This is different from <see cref="cUIElement.Append(cUIElement)"/> as it does not add it as a normal child.</summary>
         public void Add(cUIElement element) {
             if (element == null) return;
+            WrapperListItems.Add(element);
             if (IsLegacy) (LegacyNative as LegacyUIScroll).Add(element.LegacyNative);
-            else ModernNative.Invoke("Add", element.ModernNative.Value);
+            else {
+                // manual calculation because we don't want UpdateOrder();
+                ModernNative.GetValue<object>("_items").AsDynamic().Invoke("Add", element.ModernNative.Value);
+                var _innerList = ModernNative.GetValue<object>("_innerList").AsDynamic();
+                _innerList.Invoke("Append", element.ModernNative.Value);
+                _innerList.Invoke("Recalculate");
+            }
         }
         /// <summary> Removes an element to the scroll list. This is different from <see cref="cUIElement.RemoveChild(cUIElement)"/> as it does not remove it as a normal child.</summary>
         public bool Remove(cUIElement element) {
+            WrapperListItems.Remove(element);
             if (IsLegacy) return (LegacyNative as LegacyUIScroll).Remove(element.LegacyNative);
-            else return ModernNative.Invoke<bool>("Remove", element.ModernNative.Value);
+            else {
+                // manual calculation because we don't want UpdateOrder();
+                ModernNative.GetValue<object>("_innerList").AsDynamic().Invoke("RemoveChild", element.ModernNative.Value);
+                return ModernNative.GetValue<object>("_items").AsDynamic().Invoke<bool>("Remove", element.ModernNative.Value);
+            }
         }
 
     }
