@@ -115,9 +115,12 @@ namespace cModLoader.UI {
             PaddingTop = pixels;
         }
 
+        /// <summary> Overrides the size of the parent or default size.</summary>
+        public RectangleF? BaseParentSizeOverride = null;
+
         /// <summary> Copied from Terraria. (from 1.3.0.1 but added margin from newer versions) </summary>
         public virtual void Recalculate() {
-            RectangleF parentDimensions = ((Parent == null) ? new RectangleF(0, 0, ModHelper.ScreenWidth, ModHelper.ScreenHeight) : Parent.GetInnerDimensions());
+            RectangleF parentDimensions = BaseParentSizeOverride ?? ((Parent == null) ? new RectangleF(0, 0, ModHelper.ScreenWidth, ModHelper.ScreenHeight) : Parent.GetInnerDimensions());
             // newer Terraria versions compress some of this into GetDimensionsBasedOnParentDimensions() but its not needed
             RectangleF calculatedStyle = default(RectangleF);
             calculatedStyle.X = Left.GetValue(parentDimensions.Width) + parentDimensions.X;
@@ -156,13 +159,14 @@ namespace cModLoader.UI {
         protected static FieldInfo depthStencilState_Cache;
 
         /// <summary> Runs in <see cref="DrawSelf(GameReference)"/> before anything is draw but after calculations.</summary>
-        public event Action<SpriteBatch> DrawSelfExtension;
+        public event Action<GameReference> DrawSelfExtension;
 
         /// <summary> Draws element and child elements. </summary>
         public virtual void Draw(GameReference game) {
             DrawSelf(game);
             if (OverflowHidden) {
                 // cache reflections
+                // TODO: switch to Dynamic
                 if (spriteSortMode_Cache == null) {
                     spriteSortMode_Cache = typeof(SpriteBatch).GetField("spriteSortMode", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
                     blendState_Cache = typeof(SpriteBatch).GetField("blendState", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
@@ -223,7 +227,7 @@ namespace cModLoader.UI {
             }
             else Info_Cache.clicked = false;
             
-            DrawSelfExtension?.Invoke(game.spriteBatch);
+            DrawSelfExtension?.Invoke(game);
 
             if (UIUtils.Test_DrawBoundsLegacyUI) {
                 if (backgroundImage == null) {
@@ -315,7 +319,7 @@ namespace cModLoader.UI {
 
             var scale = MathHelper.Lerp(StartSize, EndSize, buttonScale); //StartSize + ((EndSize - StartSize) * buttonScale);
             var colour = Color.Lerp(EndColor, StartColor, buttonScale);
-            
+
             Vector2 size = GetFont().Invoke<Vector2>("MeasureString", Text);
             Vector2 pos = (Info_Cache.bounds.Center() + TextPixelOffset) - ((size * scale) / 2);
 

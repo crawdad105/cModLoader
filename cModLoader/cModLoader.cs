@@ -105,13 +105,11 @@ namespace cModLoader
                 });
             }
             */
-            if (Terraria.VersionChecks.Using_LegacyUISystem) {
-                ModConfig.Add(new ConfigBoolean("LegacyBackground", "Show Debug Legacy Panel Background", false, "Showing", "Hidden") {
-                    OnSetValue = (_old, _new) => {
-                        UIUtils.Test_DrawBoundsLegacyUI = _new;
-                    }
-                });
-            }
+            ModConfig.Add(new ConfigBoolean("LegacyBackground", "Show Debug Legacy Panel Background", false, "Showing", "Hidden") {
+                OnSetValue = (_old, _new) => {
+                    UIUtils.Test_DrawBoundsLegacyUI = _new;
+                }
+            });
             ModConfig.Add(new ConfigText("Text3", "Unsafe Options, do not change."));
             ModConfig.Add(new ConfigSelectToggle("ForceWindow", "Force Windows Mode", 0, new string[] { "Default", "Forms", "SDL3", "SDL2" }) {
                 OnSetValue = (_old, _new) => {
@@ -129,7 +127,7 @@ namespace cModLoader
         public static bool ShowSplashDebug = true;
 
         /// <summary> Definitely not making this one public.<br/>Currently only works in versions before 1.3. </summary>
-        internal static bool SteamSpoofer = false;
+        internal static bool SteamSpoofer = true;
 
     }
 

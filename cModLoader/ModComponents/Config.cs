@@ -149,6 +149,7 @@ namespace cModLoader.ModComponents {
             var textElm = new cUIText(DisplayText, 0.6f, true);
             textElm.Width = new Positioning(0f, 1f);
             textElm.Height = new Positioning(35f, 0f);
+            textElm.Alignment = new Vector2(0.5f, 0f);
             return textElm;
         }
     }
@@ -272,10 +273,15 @@ namespace cModLoader.ModComponents {
             if (slider.IsLegacy) {
                 slider.Width = new Positioning(75f, 0f);
             }
+            else {
+                // this is set by default, for modern UI versions where slider classes don't exist its set to 75f in cUIColoredSlider
+                // slider.Width = new Positioning(200f, 0f); // 1 see 167 everywhere in UIColoredSlider
+            }
+
             slider.Height = new Positioning(0f, 1f);
             slider.OnValueChange = (val) => SetValue(val);
             var elm = ConfigElement.CreateDefaultLeftRightElement(DisplayText, slider);
-            if (!slider.IsLegacy) {
+            if (!slider.IsLegacy && !slider.IsLegacyModernSlider) {
                 slider.Margin = new Vector4(0, 0, 0, 0);
                 slider.Left = new Positioning(6f, 0f);
                 slider.Top = new Positioning(-4f, 0f);
@@ -328,6 +334,10 @@ namespace cModLoader.ModComponents {
             var path = configPath;
             if (!File.Exists(path)) {
                 Output.Error($"Config file \"{configPath}\" does not exist.");
+                // set defaults if no config found
+                foreach (var elm in Items) {
+                    ConfigElement.MissingConfigValueFallback(modContext, elm);
+                }
                 return;
             }
             var lines = File.ReadAllLines(path);

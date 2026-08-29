@@ -150,7 +150,7 @@ namespace cModLoader.UI
 
         }
 
-        protected virtual void _DrawSelfLegacy(SpriteBatch sb) {
+        protected virtual void _DrawSelfLegacy(GameReference game) {
             if (_modIcon != null) {
                 var children = LegacyNative.GetChildren();
                 children[0].Left = new Positioning(96f + 5f, 0f);
@@ -162,11 +162,12 @@ namespace cModLoader.UI
                 Rectangle? sourceRectangle = null;
                 int num = 80;
                 float num2 = (dimensions.Height - (float)num) / 2f;
-                sb.Draw(_modIcon, new Rectangle((int)dimensions.X + (int)num2, (int)dimensions.Y + (int)num2, num, num), sourceRectangle, color, 0f, new Vector2(0f, 0f), SpriteEffects.None, 0f);
+                game.spriteBatch.Draw(_modIcon, new Rectangle((int)dimensions.X + (int)num2, (int)dimensions.Y + (int)num2, num, num), sourceRectangle, color, 0f, new Vector2(0f, 0f), SpriteEffects.None, 0f);
             }
         }
 
-        protected virtual void _SubDrawSelf(SpriteBatch sb) {
+        protected virtual void _SubDrawSelf(GameReference game) {
+            var sb = game.spriteBatch;
             var dimensions = GetDimensions();
             Color color = new Color(255, 255, 255);
             Rectangle? sourceRectangle = null;

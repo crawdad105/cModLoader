@@ -129,7 +129,7 @@ namespace cModLoader.UI
                     var param = baseMethod.GetParameters().Select(p => p.ParameterType).ToArray();
                     var methodBuilder = typeBuilder.DefineMethod(baseMethod.Name + "_", MethodAttributes.Family | MethodAttributes.Virtual | MethodAttributes.HideBySig, baseMethod.ReturnType, param);
                     // create event
-                    var callbackField = typeBuilder.DefineField("DrawSelfCallback", typeof(Action<SpriteBatch>), FieldAttributes.Public);
+                    var callbackField = typeBuilder.DefineField("DrawSelfCallback", typeof(Action<GameReference>), FieldAttributes.Public);
                     
                     var callMethod = typeof(cUIElementOverride).GetMethod(nameof(cUIElementOverride.DrawSelf_Intermediate), BindingFlags.NonPublic | BindingFlags.Static);
                     
@@ -139,8 +139,7 @@ namespace cModLoader.UI
                     // il.Emit(OpCodes.Ldarg_1);
                     // il.Emit(OpCodes.Call, baseMethod);
                     // modify IL to call our function
-                    il.Emit(OpCodes.Ldarg_0);
-                    il.Emit(OpCodes.Ldarg_1);
+                    il.Emit(OpCodes.Ldarg_0); // this
                     il.Emit(OpCodes.Call, callMethod);
                     il.Emit(OpCodes.Ret);
 

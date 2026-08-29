@@ -1,6 +1,6 @@
 ﻿# ![cModLoader Logo](cModLoader/Logo.png)
 
-cModLoader is a simple mod loader for any PC version of vanilla Terraria (on Windows and Linux not MacOS though).
+cModLoader is a simple mod loader for most PC version of vanilla Terraria (on Windows and Linux not MacOS though).
 It can be ran without making any patches to Terraria, ei. does not need MonoMod/Harmony, Mono.cecil or TerrariaInjector (Although it uses Mono.cecil but not necessarily for modifications).
 <br><br>
 It is not meant to replace tModLoader, its meant to give modders full and easy access to all of vanilla Terraria.
@@ -15,8 +15,9 @@ Contact: Use whatever is convenient.
 <br>
 
 > [!IMPORTANT]
+> There may be versions that have issues, report them if you want them fixed.<br/>
 > Linux only works in version 1.4.1 and up because i could not find hook location for older FNA versions.<br>
-> I do not know how or if this works on servers, for now its not an implemented feature.
+> I do not know how or if this works on servers, for now its not an implemented feature.<br>
 
 > [!NOTE]
 > This is not supposed to rivel tModLoader or TerrariaModder however if enough people want features like ways to add items, NPCs and more i may consider it. Its not necessarily hard to do but keep in mind i would need seamless integration for every versions of Terraria and to understand how every version of Terraria works on Windows and Linux (and maybe MaxOS in the future).

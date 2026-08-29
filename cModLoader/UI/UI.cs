@@ -20,6 +20,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Windows.Forms;
 using System.Xml.Linq;
 using static cModLoader.Accessibility;
 using static System.Windows.Forms.AxHost;
@@ -160,22 +161,22 @@ namespace cModLoader.UI {
     /// <summary>cModLoader specific UI wrapper. This is the same as <see cref="cUIElement"/> but gives access to override functions. (only 1 for now)<br/>These override functions are implemented by default for the legacy UI, this just exposes them easily.<para>Overridden functions WILL NOT run the original (in modern UI), use <see cref="Dynamic"/> or something to do that.</para></summary>
     public class cUIElementOverride : cUIElement {
         /// <summary> An intermediate stage for Terraria's UIElement DrawSelf override, this isn't needed but its easier and good for debugging.<para>Don't call this, this is public because its easier.</para></summary>
-        internal static void DrawSelf_Intermediate(object terrariaElement, SpriteBatch sb) {
-            var foo = new Dynamic(terrariaElement).GetValue<Action<SpriteBatch>>("DrawSelfCallback");
-            foo(sb);
+        internal static void DrawSelf_Intermediate(object terrariaElement) {
+            var foo = new Dynamic(terrariaElement).GetValue<Action<GameReference>>("DrawSelfCallback");
+            foo?.Invoke(GameReference.StaticReference);
         }
         /// <summary> Modern UI: Adds code to the DrawSelf function in UIElement.<br/>Legacy UI: Does the same as modern but for <see cref="LegacyUIContainer"/>, this runs after calculations but before anything should be draw.</summary>
-        public event Action<SpriteBatch> DrawSelf {
+        public event Action<GameReference> DrawSelf {
             add {
                 if (IsLegacy) LegacyNative.DrawSelfExtension += value;
                 else {
-                    ModernNative.SetValue("DrawSelfCallback", Delegate.Combine(ModernNative.GetValue<Action<SpriteBatch>>("DrawSelfCallback"), value));
+                    ModernNative.SetValue("DrawSelfCallback", Delegate.Combine(ModernNative.GetValue<Action<GameReference>>("DrawSelfCallback"), value));
                 }
             }
             remove {
                 if (IsLegacy) LegacyNative.DrawSelfExtension -= value;
                 else {
-                    ModernNative.SetValue("DrawSelfCallback", Delegate.Remove(ModernNative.GetValue<Action<SpriteBatch>>("DrawSelfCallback"), value));
+                    ModernNative.SetValue("DrawSelfCallback", Delegate.Remove(ModernNative.GetValue<Action<GameReference>>("DrawSelfCallback"), value));
                 }
             }
         }
@@ -185,6 +186,25 @@ namespace cModLoader.UI {
         }
     }
     
+    /// <summary>cModLoader specific UI wrapper. This is used to convert Legacy UI to modern UI.<br/>This is a very minimal class to get things working, settings values does not transalte to the legacy element.</summary>
+    public class cUILegacyBridge : cUIElementOverride {
+        public LegacyUIContainer LegacyBridgeElement;
+        public cUILegacyBridge(LegacyUIContainer LegacyElement) : base() {
+            LegacyBridgeElement = LegacyElement;
+            DrawSelf += _DrawSelf;
+        }
+        public void _DrawSelf(GameReference game) {
+            Recalculate();
+            LegacyBridgeElement.BaseParentSizeOverride = GetInnerDimensions();
+            LegacyBridgeElement.HAlign = Alignment.X;
+            LegacyBridgeElement.VAlign = Alignment.Y;
+            LegacyBridgeElement.Left = Left;
+            LegacyBridgeElement.Top = Top;
+            LegacyBridgeElement.Width = Width;
+            LegacyBridgeElement.Height = Height;
+            LegacyBridgeElement.Draw(game);
+        }
+    }
     /// <summary>cModLoader specific UI wrapper. This wraps Terraria's UIElement for modern UI and <see cref="LegacyUIContainer"/> for legacy UI. <br/>Not the same as Terraria's UIElement, this is specifically used for cModLoader as a wrapper </summary>
     public class cUIElement {
         /// <summary> 
@@ -223,7 +243,7 @@ namespace cModLoader.UI {
         public Positioning Width {
             get => IsLegacy ? LegacyNative.Width : new Positioning(
                 ModernNative.GetValue<float>("Width.Pixels"),
-                ModernNative.GetValue<float>("Width.Precents")
+                ModernNative.GetValue<float>("Width.Precent")
                 );
             set {
                 if (IsLegacy) LegacyNative.Width = value;
@@ -235,7 +255,7 @@ namespace cModLoader.UI {
         public Positioning Height {
             get => IsLegacy ? LegacyNative.Height : new Positioning(
                 ModernNative.GetValue<float>("Height.Pixels"),
-                ModernNative.GetValue<float>("Height.Precents")
+                ModernNative.GetValue<float>("Height.Precent")
                 );
             set {
                 if (IsLegacy) LegacyNative.Height = value;
@@ -275,7 +295,7 @@ namespace cModLoader.UI {
         public Positioning MaxWidth {
             get => IsLegacy ? LegacyNative.MaxWidth : new Positioning(
                 ModernNative.GetValue<float>("MaxWidth.Pixels"),
-                ModernNative.GetValue<float>("MaxWidth.Precents")
+                ModernNative.GetValue<float>("MaxWidth.Precent")
                 );
             set {
                 if (IsLegacy) LegacyNative.MaxWidth = value;
@@ -287,7 +307,7 @@ namespace cModLoader.UI {
         public Positioning MaxHeight {
             get => IsLegacy ? LegacyNative.MaxHeight : new Positioning(
                 ModernNative.GetValue<float>("MaxHeight.Pixels"),
-                ModernNative.GetValue<float>("MaxHeight.Precents")
+                ModernNative.GetValue<float>("MaxHeight.Precent")
                 );
             set {
                 if (IsLegacy) LegacyNative.MaxHeight = value;
@@ -299,7 +319,7 @@ namespace cModLoader.UI {
         public Positioning MinWidth {
             get => IsLegacy ? LegacyNative.MinWidth : new Positioning(
                 ModernNative.GetValue<float>("MinWidth.Pixels"),
-                ModernNative.GetValue<float>("MinWidth.Precents")
+                ModernNative.GetValue<float>("MinWidth.Precent")
                 );
             set {
                 if (IsLegacy) LegacyNative.MinWidth = value;
@@ -311,7 +331,7 @@ namespace cModLoader.UI {
         public Positioning MinHeight {
             get => IsLegacy ? LegacyNative.MinHeight : new Positioning(
                 ModernNative.GetValue<float>("MinHeight.Pixels"),
-                ModernNative.GetValue<float>("MinHeight.Precents")
+                ModernNative.GetValue<float>("MinHeight.Precent")
                 );
             set {
                 if (IsLegacy) LegacyNative.MinHeight = value;
@@ -323,7 +343,7 @@ namespace cModLoader.UI {
         public Positioning Top {
             get => IsLegacy ? LegacyNative.Top : new Positioning(
                 ModernNative.GetValue<float>("Top.Pixels"),
-                ModernNative.GetValue<float>("Top.Precents")
+                ModernNative.GetValue<float>("Top.Precent")
                 );
             set {
                 if (IsLegacy) LegacyNative.Top = value;
@@ -335,7 +355,7 @@ namespace cModLoader.UI {
         public Positioning Left {
             get => IsLegacy ? LegacyNative.Left : new Positioning(
                 ModernNative.GetValue<float>("Left.Pixels"),
-                ModernNative.GetValue<float>("Left.Precents")
+                ModernNative.GetValue<float>("Left.Precent")
                 );
             set {
                 if (IsLegacy) LegacyNative.Left = value;
@@ -464,24 +484,44 @@ namespace cModLoader.UI {
     public class cUIPanel : cUIElementOverride {
         public Texture2D _borderTexture = null;
         public Texture2D _backgroundTexture = null;
-        /// <summary> Draws a panel using <paramref name="texture"/>. This is copied from Terraria's UIPanel.<br/>Leave <paramref name="color"/> <see langword="null"/> for <see cref="Color.White"/>.</summary>
-        public static void DrawPanel(cUIElement element, SpriteBatch spriteBatch, Texture2D texture, Color? _color = null, int _cornerSize = 12, int _barSize = 4) {
+        /// <summary> Draws a panel using <paramref name="texture"/>. This is copied from Terraria's UIPanel but changed slightly to work with its textures in any versions.<br/>Leave <paramref name="_color"/> <see langword="null"/> for <see cref="Color.White"/>.</summary>
+        public static void DrawPanel(cUIElement element, SpriteBatch spriteBatch, Texture2D texture, Color? _color = null) {
+            int _cornerSize = 12;
+            int _textPadding = 3;
+            int _barSize = 4;
             var color = _color ?? Color.White;
-
             var dimensions = element.GetDimensions();
             Point point = new Point((int)dimensions.X, (int)dimensions.Y);
-            Point point2 = new Point(point.X + (int)dimensions.Width - _cornerSize, point.Y + (int)dimensions.Height - _cornerSize);
-            int width = point2.X - point.X - _cornerSize;
-            int height = point2.Y - point.Y - _cornerSize;
-            spriteBatch.Draw(texture, new Rectangle(point.X, point.Y, _cornerSize, _cornerSize), new Rectangle(0, 0, _cornerSize, _cornerSize), color);
-            spriteBatch.Draw(texture, new Rectangle(point2.X, point.Y, _cornerSize, _cornerSize), new Rectangle(_cornerSize + _barSize, 0, _cornerSize, _cornerSize), color);
-            spriteBatch.Draw(texture, new Rectangle(point.X, point2.Y, _cornerSize, _cornerSize), new Rectangle(0, _cornerSize + _barSize, _cornerSize, _cornerSize), color);
-            spriteBatch.Draw(texture, new Rectangle(point2.X, point2.Y, _cornerSize, _cornerSize), new Rectangle(_cornerSize + _barSize, _cornerSize + _barSize, _cornerSize, _cornerSize), color);
-            spriteBatch.Draw(texture, new Rectangle(point.X + _cornerSize, point.Y, width, _cornerSize), new Rectangle(_cornerSize, 0, _barSize, _cornerSize), color);
-            spriteBatch.Draw(texture, new Rectangle(point.X + _cornerSize, point2.Y, width, _cornerSize), new Rectangle(_cornerSize, _cornerSize + _barSize, _barSize, _cornerSize), color);
-            spriteBatch.Draw(texture, new Rectangle(point.X, point.Y + _cornerSize, _cornerSize, height), new Rectangle(0, _cornerSize, _cornerSize, _barSize), color);
-            spriteBatch.Draw(texture, new Rectangle(point2.X, point.Y + _cornerSize, _cornerSize, height), new Rectangle(_cornerSize + _barSize, _cornerSize, _cornerSize, _barSize), color);
-            spriteBatch.Draw(texture, new Rectangle(point.X + _cornerSize, point.Y + _cornerSize, width, height), new Rectangle(_cornerSize, _cornerSize, _barSize, _barSize), color);
+            // if with is 32 there were gaps in the textures, newer versions don't do this
+            if (texture.Width >= 32) {
+                _barSize = 2; // resized to 2
+                // original math used constants for 12, 15, 20 and 24. the new values may be the wrong combination but are the correct values.
+                Point point2 = new Point((int)(dimensions.X + dimensions.Width) - _cornerSize, (int)(dimensions.Y + dimensions.Height) - _cornerSize);
+                int width = (int)Math.Ceiling(dimensions.Width) - (_cornerSize * 2);
+                int height = (int)Math.Ceiling(dimensions.Height) - (_cornerSize * 2);
+                spriteBatch.Draw(texture, new Rectangle(point.X, point.Y, _cornerSize, _cornerSize), new Rectangle(0, 0, _cornerSize, _cornerSize), color);
+                spriteBatch.Draw(texture, new Rectangle(point2.X, point.Y, _cornerSize, _cornerSize), new Rectangle(_cornerSize + _barSize + (_textPadding * 2), 0, _cornerSize, _cornerSize), color);
+                spriteBatch.Draw(texture, new Rectangle(point.X, point2.Y, _cornerSize, _cornerSize), new Rectangle(0, _cornerSize + _barSize + (_textPadding * 2), _cornerSize, _cornerSize), color);
+                spriteBatch.Draw(texture, new Rectangle(point2.X, point2.Y, _cornerSize, _cornerSize), new Rectangle(_cornerSize + _barSize + (_textPadding * 2), _cornerSize + _barSize + (_textPadding * 2), _cornerSize, _cornerSize), color);
+                spriteBatch.Draw(texture, new Rectangle(point.X + _cornerSize, point.Y, width, _cornerSize), new Rectangle(_cornerSize + _textPadding, 0, _barSize, _cornerSize), color);
+                spriteBatch.Draw(texture, new Rectangle(point.X + _cornerSize, point2.Y, width, _cornerSize), new Rectangle(_cornerSize + _textPadding, _cornerSize + _barSize + (_textPadding * 2), _barSize, _cornerSize), color);
+                spriteBatch.Draw(texture, new Rectangle(point.X, point.Y + _cornerSize, _cornerSize, height), new Rectangle(0, _cornerSize + _textPadding, _cornerSize, _barSize), color);
+                spriteBatch.Draw(texture, new Rectangle(point2.X, point.Y + _cornerSize, _cornerSize, height), new Rectangle(_cornerSize + _barSize + (_textPadding * 2), _cornerSize + _textPadding, _cornerSize, _barSize), color);
+                spriteBatch.Draw(texture, new Rectangle(point.X + _cornerSize, point.Y + _cornerSize, width, height), new Rectangle(_cornerSize + _textPadding, _cornerSize + _textPadding, _barSize, _barSize), color);
+            } else {
+                Point point2 = new Point(point.X + (int)dimensions.Width - _cornerSize, point.Y + (int)dimensions.Height - _cornerSize);
+                int width = point2.X - point.X - _cornerSize;
+                int height = point2.Y - point.Y - _cornerSize;
+                spriteBatch.Draw(texture, new Rectangle(point.X, point.Y, _cornerSize, _cornerSize), new Rectangle(0, 0, _cornerSize, _cornerSize), color);
+                spriteBatch.Draw(texture, new Rectangle(point2.X, point.Y, _cornerSize, _cornerSize), new Rectangle(_cornerSize + _barSize, 0, _cornerSize, _cornerSize), color);
+                spriteBatch.Draw(texture, new Rectangle(point.X, point2.Y, _cornerSize, _cornerSize), new Rectangle(0, _cornerSize + _barSize, _cornerSize, _cornerSize), color);
+                spriteBatch.Draw(texture, new Rectangle(point2.X, point2.Y, _cornerSize, _cornerSize), new Rectangle(_cornerSize + _barSize, _cornerSize + _barSize, _cornerSize, _cornerSize), color);
+                spriteBatch.Draw(texture, new Rectangle(point.X + _cornerSize, point.Y, width, _cornerSize), new Rectangle(_cornerSize, 0, _barSize, _cornerSize), color);
+                spriteBatch.Draw(texture, new Rectangle(point.X + _cornerSize, point2.Y, width, _cornerSize), new Rectangle(_cornerSize, _cornerSize + _barSize, _barSize, _cornerSize), color);
+                spriteBatch.Draw(texture, new Rectangle(point.X, point.Y + _cornerSize, _cornerSize, height), new Rectangle(0, _cornerSize, _cornerSize, _barSize), color);
+                spriteBatch.Draw(texture, new Rectangle(point2.X, point.Y + _cornerSize, _cornerSize, height), new Rectangle(_cornerSize + _barSize, _cornerSize, _cornerSize, _barSize), color);
+                spriteBatch.Draw(texture, new Rectangle(point.X + _cornerSize, point.Y + _cornerSize, width, height), new Rectangle(_cornerSize, _cornerSize, _barSize, _barSize), color);
+            }
         }
 
         /*
@@ -512,23 +552,25 @@ namespace cModLoader.UI {
         public Color BorderColor = Color.Black;
 
         public cUIPanel() : base() {
-            if (_borderTexture == null) {
-                if (Terraria.VersionChecks.Using_RelogicAssets)
-                    _borderTexture = Terraria.Relogic.Asset<Texture2D>("Images/UI/PanelBorder").Value;
-                else _borderTexture = Terraria.Textures.LoadTexture("Images/UI/PanelBorder");
-            }
-            if (_backgroundTexture == null) {
-                if (Terraria.VersionChecks.Using_RelogicAssets)
-                    _backgroundTexture = Terraria.Relogic.Asset<Texture2D>("Images/UI/PanelBackground").Value;
-                else _backgroundTexture = Terraria.Textures.LoadTexture("Images/UI/PanelBackground");
-            }
-            SetPadding(12f);
             //native = IsLegacy ? new LegacyUIContainer() : UIUtils.ModernReferences.UIPanel_Reference.New();
-            if (!IsLegacy) DrawSelf += _DrawSelf;
+            if (!IsLegacy) {
+                if (_borderTexture == null) {
+                    if (Terraria.VersionChecks.Using_RelogicAssets)
+                        _borderTexture = Terraria.Relogic.Asset<Texture2D>("Images/UI/PanelBorder").Value;
+                    else _borderTexture = Terraria.Textures.LoadTexture("Images/UI/PanelBorder");
+                }
+                if (_backgroundTexture == null) {
+                    if (Terraria.VersionChecks.Using_RelogicAssets)
+                        _backgroundTexture = Terraria.Relogic.Asset<Texture2D>("Images/UI/PanelBackground").Value;
+                    else _backgroundTexture = Terraria.Textures.LoadTexture("Images/UI/PanelBackground");
+                }
+                DrawSelf += _DrawSelf;
+                SetPadding(12f);
+            }
         }
-        protected virtual void _DrawSelf(SpriteBatch sb) {
-            DrawPanel(this, sb, _backgroundTexture, BackgroundColor);
-            DrawPanel(this, sb, _borderTexture, BorderColor);
+        protected virtual void _DrawSelf(GameReference game) {
+            DrawPanel(this, game.spriteBatch, _backgroundTexture, BackgroundColor);
+            DrawPanel(this, game.spriteBatch, _borderTexture, BorderColor);
         }
     }
     /// <summary>cModLoader specific UI wrapper. This wraps Terraria's UITextPanel for modern UI and <see cref="LegacyUIText"/> for legacy UI.<br/>T (<typeparamref name="T"/>) must be a <see cref="string"/> in all versions below 1.3.4 otherwise idk what happens. <br/>Not the same as Terraria's UITextPanel, this is specifically used for cModLoader as a wrapper </summary>
@@ -751,6 +793,8 @@ namespace cModLoader.UI {
     }
     /// <summary>cModLoader specific UI wrapper. This wraps Terraria's UIColoredSlider for modern UI above and including 1.4 and <see cref="LegacyUIContainer"/> for legacy versions.<br/>Throws an error on version 1.3 to 1.3.5.3</summary>
     public class cUIColoredSlider : cUIElement {
+        /// <summary> Is the slider using legacy sliders for the modern UI. This is <see langword="true"/> occurs in some 1.3 versions. (See <see cref="Terraria.VersionChecks.Using_Modern_UISliders"/>)</summary>
+        public bool IsLegacyModernSlider;
         private float _value;
         /// <summary> Gets or sets the slider value.</summary>
         public float Value {
@@ -766,8 +810,20 @@ namespace cModLoader.UI {
 
         /// <summary> <paramref name="startColour"/> and <paramref name="endColour"/> are ignored for legacy UI.</summary>
         public cUIColoredSlider(Color startColour, Color endColour, float value) {
-            native = IsLegacy ? new LegacyUINumericUpDown(GetSliderValue, SetSliderValue) : (Terraria.VersionChecks.Using_Modern_UISliders ? UIUtils.ModernReferences.UIColoredSlider_Reference.New(GetSliderValue, SetSliderValue, _SetSliderGamepad, _SliderColour) : throw new Exception("Non UIColoredSlider class For Modern UI not implemented."));
             Value = value;
+            if (IsLegacy) {
+                native = new LegacyUINumericUpDown(GetSliderValue, SetSliderValue);
+            } else if (Terraria.VersionChecks.Using_Modern_UISliders) {
+                native = UIUtils.ModernReferences.UIColoredSlider_Reference.New(GetSliderValue, SetSliderValue, _SetSliderGamepad, _SliderColour);
+            }
+            else {
+                native = new cUILegacyBridge(new LegacyUINumericUpDown(GetSliderValue, SetSliderValue)) {
+                    Height = new Positioning(0, 1f), // this is reset by the config element
+                    Width = new Positioning(75f, 0f),
+                    Alignment = new Vector2(1f, 0.5f),
+                }.ModernNative;
+                IsLegacyModernSlider = true;
+            }
             this.startColour = startColour;
             this.endColour = endColour;
             SliderColour = DefaultSliderColour;
