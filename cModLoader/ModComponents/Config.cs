@@ -84,7 +84,7 @@ namespace cModLoader.ModComponents {
         public static bool ShouldSaveConfig(Mod mod, ConfigElement _ref) => ModLoader.ModContext.RunUnderModContext(mod, () => _ref.ShouldSaveConfig());
         /// <summary> Calls <see cref="ShouldSaveConfig()"/> but wraps it in a mod context.<br/><paramref name="mod"/> can be <see langword="null"/>, or any mod. </summary>
         public static string SaveConfigValue(Mod mod, ConfigElement _ref) => ModLoader.ModContext.RunUnderModContext(mod, () => _ref.SaveConfigValue());
-        /// <summary> Calls <see cref="SaveConfigValue()"/> but wraps it in a mod context.<br/><paramref name="mod"/> can be <see langword="null"/>, or any mod. </summary>
+        /// <summary> Calls <see cref="ReadConfigValue(string)"/> but wraps it in a mod context.<br/><paramref name="mod"/> can be <see langword="null"/>, or any mod. </summary>
         public static void ReadConfigValue(Mod mod, ConfigElement _ref, string stringData) => ModLoader.ModContext.RunUnderModContext(mod, () => _ref.ReadConfigValue(stringData));
         /// <summary> Calls <see cref="MissingConfigValueFallback()"/> but wraps it in a mod context.<br/><paramref name="mod"/> can be <see langword="null"/>, or any mod. </summary>
         public static void MissingConfigValueFallback(Mod mod, ConfigElement _ref) => ModLoader.ModContext.RunUnderModContext(mod, () => _ref.MissingConfigValueFallback());
@@ -291,7 +291,7 @@ namespace cModLoader.ModComponents {
     /// <summary> Configuration settings for your mod. </summary>
     public class Config {
         /// <summary> Config elements. </summary>
-        public List<ConfigElement> Items;
+        public List<ConfigElement> Items = new List<ConfigElement>();
         /// <summary> Gets number of config items. </summary>
         public int Count => Items.Count;
         /// <summary> Gets a given config element. Returns <see langword="null"/> if no elements are found. </summary>
@@ -299,37 +299,36 @@ namespace cModLoader.ModComponents {
         /// <summary> Gets a given config element using its internal name. Returns <see langword="null"/> if no elements are found. </summary>
         public ConfigElement this[string internalConfigName] => Items.Exists(x => x.InternalName == internalConfigName) ? Items.Find(x => x.InternalName == internalConfigName) : throw new Exception($"No config elements with the internal name \"{internalConfigName}\"");
 
-        private Mod modRef = null;
-
+        private Mod modContext = null;
+        public Config() { }
         public Config(Mod mod) {
-            Items = new List<ConfigElement>();
-            modRef = mod;
-            // if config folder was not found, still do a config but dont try saving or reading
-            if (!ModLoader.ConfigFolderFound) return;
-            if (!File.Exists(modRef.GetConfigFile())) {
-                Output.Error("Failed to find file \"" + modRef.GetConfigFile() + "\"");
-                Output.Error("  Can not load config for mod " + mod.ModName + ".");
+            if (mod == null) {
+                modContext = mod;
+                // if config folder was not found, still do a config but dont try saving or reading
+                if (!ModLoader.ConfigFolderFound) return;
+                if (!File.Exists(modContext.GetConfigFile())) {
+                    Output.Error("Failed to find file \"" + modContext.GetConfigFile() + "\"");
+                    Output.Error("  Can not load config for mod " + mod.ModName + ".");
+                }
             }
         }
         /// <summary> Saves config data. By default this is called when pressing the "Back and Save" button in the config menu.</summary>
-        public void SaveConfig(bool overrideOld = true) {
-            if (!overrideOld && File.Exists(modRef.GetConfigFile())) {
-                Output.Print($"Not overriding config for mod \"{modRef.ModName}\". Config not saved.");
+        public void SaveConfig(string configPath, bool overrideOld = true) {
+            // config folder should always exist
+            if (!Directory.Exists(Path.GoBack(configPath))) {
+                Output.Print($"Can not find folder \"{Path.GoBack(configPath)}\".");
                 return;
             }
-            var lines = Items.Where(ix => ConfigElement.ShouldSaveConfig(modRef, ix)).Select(x => x.InternalName + ":" + ConfigElement.SaveConfigValue(modRef, x));
-            File.WriteAllLines(modRef.GetConfigFile(), lines);
+            if (!overrideOld) return;
+            var lines = Items.Where(ix => ConfigElement.ShouldSaveConfig(modContext, ix)).Select(x => x.InternalName + ":" + ConfigElement.SaveConfigValue(modContext, x));
+            File.WriteAllLines(configPath, lines);
         }
-        /// <summary> Loads config data. By default this is called when and instance of this config is created (once per game session). </summary><returns>If the config was loaded.</returns>
-        public bool LoadConfig() {
-            if (!ModLoader.ConfigFolderFound) {
-                Output.Print("Can not LoadConfig(). Config folder not detected.");
-                return false;
-            }
-            var path = ModLoader.ModContext.RunUnderModContext(modRef, () => modRef.GetConfigFile());
+        /// <summary> Loads config data. By default this is called when and instance of this config is created (once per game session).<br/>Feel free to call it yourself, use <see cref="Mod.GetConfigFile()"/> to get the path.</summary><returns>If the config was loaded.</returns>
+        public void LoadConfig(string configPath) {
+            var path = configPath;
             if (!File.Exists(path)) {
-                Output.Error("Can not load config for mod " + modRef.ModName + ". File does not exist.");
-                return false;
+                Output.Error($"Config file \"{configPath}\" does not exist.");
+                return;
             }
             var lines = File.ReadAllLines(path);
             foreach (var elm in Items) {
@@ -338,13 +337,13 @@ namespace cModLoader.ModComponents {
                     if (line.StartsWith(elm.InternalName + ":")) {
                         var s = (elm.InternalName + ":").Length;
                         var str = line.Substring(s, line.Length - s);
-                        ConfigElement.ReadConfigValue(modRef, elm, str);
+                        ConfigElement.ReadConfigValue(modContext, elm, str);
                         found = true;
                     }
                 }
-                if (!found) ConfigElement.MissingConfigValueFallback(modRef, elm);
+                if (!found) ConfigElement.MissingConfigValueFallback(modContext, elm);
             }
-            return true;
+            return;
         }
         /// <summary> Adds a config element to the config. </summary>
         public void Add(ConfigElement element) {

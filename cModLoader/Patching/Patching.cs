@@ -343,8 +343,8 @@ namespace cModLoader.Patching
             ms.Dispose();
 
             // output patched executable for debugging (this will not run on its own, the dll with the new function needs to also exist)
-            if (cModLoaderInitializer.PatchOutOverride || cModLoaderInitializer.Debug) // if VirtualLaunch don't create any file
-                File.WriteAllBytes(realTerrariaPath.Substring(0, realTerrariaPath.Length - 4) + "_Patched.exe", patched);
+            // if (cModLoaderInitializer.PatchOutOverride || cModLoaderInitializer.Debug) // if VirtualLaunch don't create any file
+            //     File.WriteAllBytes(realTerrariaPath.Substring(0, realTerrariaPath.Length - 4) + "_Patched.exe", patched);
 
             return patched; // return byte[] array because loading the dll here will recall AssemblyResolve causing a stack overflow
 

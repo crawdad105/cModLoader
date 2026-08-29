@@ -13,13 +13,13 @@ namespace cModLoader.Patching
     public static class VeryLegacyVersionPatch
     {
         /// <summary> Called when "Invoke cModLoader" is pressed. </summary>
-        public static event Action OnClickCModLoader = null;
+        //public static event Action OnClickCModLoader = null;
 
-        internal static UI.LegacyUIText DefaultModMenuButton = new UI.LegacyUIText("Invoke cModLoader", false, 1f, 1f, Color.White, Color.White * 0.5f, true) {
-            HAlign = 1f,
-            MarginRight = 10,
-            MarginTop = 10,
-        };
+        //internal static UI.LegacyUIText DefaultModMenuButton = new UI.LegacyUIText("Invoke cModLoader", false, 1f, 1f, Color.White, Color.White * 0.5f, true) {
+        //    HAlign = 1f,
+        //    MarginRight = 10,
+        //    MarginTop = 10,
+        //};
         /*
         internal static void LoadPatches() {
             cModPatch.AddPatch("Terraria.Main", "Draw", "System.Void", new string[] { "Microsoft.Xna.Framework.GameTime" }, null, (body, il, inst, asm) => {
@@ -70,11 +70,11 @@ namespace cModLoader.Patching
         }
         internal static void PostDraw(object main, GameTime time) { GlobalHooks.PostDraw(main, time); }
         */
-        internal static void _BaseDraw(GameReference game) {
-            DefaultModMenuButton.Draw(game);
-            var info = DefaultModMenuButton.GetDrawnDetails();
-            if (info.clicked) OnClickCModLoader?.Invoke();
-        }
+        //internal static void _BaseDraw(GameReference game) {
+        //    DefaultModMenuButton.Draw(game);
+        //    var info = DefaultModMenuButton.GetDrawnDetails();
+        //    if (info.clicked) OnClickCModLoader?.Invoke();
+        //}
 
 
     }

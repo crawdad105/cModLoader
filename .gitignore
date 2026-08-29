@@ -13,3 +13,5 @@
 *.pfx
 # ignore other folders because i dont know whats in them
 _*/
+# ignore packages folder, not sure if i should or should not do this, they are all standard nuget packages
+[Pp]ackages/

@@ -61,8 +61,9 @@ namespace cModLoader.ModComponents
         /// <summary> The mods icon. Should be gotten using <see cref="GetModIcon()"/> as this should also load the icon. </summary>
         protected Texture2D ModIcon = null;
 
-        private Config modConfig = null;
-        /// <summary> The mod's config options. </summary>
+        /// <summary> Mod config, if you do not set this it gets set when <see cref="ModConfig"/> is gotten.</summary>
+        protected Config modConfig = null;
+        /// <summary> The mod's config options. A new config is created if it was not already set by the mod.</summary>
         public Config ModConfig {
             get {
                 if (modConfig == null) modConfig = new Config(this);

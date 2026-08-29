@@ -22,7 +22,6 @@ using System.Windows.Forms;
 
 using cModLoader.Patching;
 using System.Net.Mail;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrackBar;
 
 namespace cModLoader
 {
@@ -38,7 +37,8 @@ namespace cModLoader
         /// <summary> A dictionary of loaded assembily (Spelt wrong but i don't feal like changing it). Eg. "Terraria", "ReLogic" or "System.Windows.Forms" </summary>
         public static Dictionary<string, Assembly> LoadedAssembilies = new Dictionary<string, Assembly>();
         private static bool ResolvingTerrariaExe = false;
-        internal static bool Debug = true;
+        /// <summary> Used for some things but mainly for keeping console.</summary>
+        internal static bool Debug = false;
         /// <summary> Should the mod loader output the patched terraria EXE, set to <see langword="false"/> when publishing. </summary>
         internal static bool PatchOutOverride = true;
 
@@ -168,6 +168,8 @@ namespace cModLoader
                 if (!Debug) Output.ShutDownConsole(true);
                 cModLauncher.Open();
             } else {
+                cModLoaderConfig.LoadConfig();
+                // try stops working once Terraria starts
                 try {
                     var c = ModLoader.LoadDlls(); // Load Dlls so patches can work
                     if (c) Output.Print("Mods Loaded");

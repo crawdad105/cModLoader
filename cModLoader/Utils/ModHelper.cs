@@ -17,10 +17,10 @@ namespace cModLoader.Utils {
         public static int ScreenWidth => Terraria.StaticReference.Main.GetValue<int>("screenWidth");
         /// <summary> Screen height according to <c>Terraria.Main.screenHeight</c> </summary>
         public static int ScreenHeight => Terraria.StaticReference.Main.GetValue<int>("screenHeight");
-        /// <summary> Is the player in the world according to <c>!Terraria.Main.gameMenu</c> </summary>
-        public static bool IsInWorld => !Terraria.StaticReference.Main.GetValue<bool>("gameMenu");
-        /// <summary> Should the in game UI be hidden according to <c>Terraria.Main.hideUI</c> </summary>
-        public static bool HideUI => Terraria.StaticReference.Main.GetValue<bool>("hideUI");
+        /// <summary> Is the player in the world according to <c>!Terraria.Main.gameMenu</c><br/>Always <see langword="true"/> for version 0.1/Alpha.</summary>
+        public static bool IsInWorld => Terraria.VersionChecks.Is0_1 ? true : !Terraria.StaticReference.Main.GetValue<bool>("gameMenu");
+        /// <summary> Should the in game UI be hidden according to <c>Terraria.Main.hideUI</c><br/>Always <see langword="false"/> for version 0.1/Alpha.</summary>
+        public static bool HideUI => Terraria.VersionChecks.Is0_1 ? false : Terraria.StaticReference.Main.GetValue<bool>("hideUI");
 
         /// <summary> Gets the list of projectiles according to <c>Terraria.Main.projectile</c></summary>
         public static Array Projectiles => Terraria.StaticReference.Main.GetValue<Array>("projectile");

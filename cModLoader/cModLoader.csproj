@@ -209,6 +209,7 @@
     <Compile Include="UI\LegacyUI.cs" />
     <Compile Include="UI\ModMenu.cs" />
     <Compile Include="UI\UI.cs" />
+    <Content Include="Logo.png" />
     <Content Include="_Old Code\UIScroll.cs.txt" />
     <Content Include="_Old Code\UIString.cs.txt" />
     <Compile Include="UI\UIUtils.cs" />

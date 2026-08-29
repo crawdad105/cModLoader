@@ -144,7 +144,7 @@ namespace cModLoader.UI
             BackAndSave.OnClick += (e, o) => {
                 Terraria.Audio.PlaySound(11, -1, -1, 1);
                 BackPress();
-                mod.ModConfig.SaveConfig();
+                mod.ModConfig.SaveConfig(mod.GetConfigFile());
                 if (BackAndSave.IsLegacy) (BackAndSave.LegacyNative as LegacyUIText).buttonScale = 0f;
             };
             mainContainer.Append(BackAndSave);
@@ -249,9 +249,10 @@ namespace cModLoader.UI
         /// <summary> Opens a mod menu. Set <paramref name="menu"/> to <see langword="null"/> to open the mod list. </summary>
         public static void OpenGameMenu(UIMenu menu) {
             menu = menu ?? modListMenu;
-            var gameMenu = Terraria.StaticReference.Main.GetValue<bool>("gameMenu");
-            if (gameMenu) {
-                Terraria.StaticReference.Main.SetValue("menuMode", 888);
+            if (ModHelper.IsInWorld) {
+                if (!Terraria.VersionChecks.Is0_1) {
+                    Terraria.StaticReference.Main.SetValue("menuMode", 888);
+                }
                 if (Terraria.VersionChecks.Using_LegacyUISystem) {
                     subInterface.SetState(menu);
                 } else {
@@ -273,9 +274,10 @@ namespace cModLoader.UI
         }
         /// <summary> Completely quits out of the mod menu. </summary>
         public static void CloseGameMenu(bool setMenuMode = true) {
-            var gameMenu = (bool)Terraria._Main.Get("gameMenu");
-            if (gameMenu) {
-                if (setMenuMode) Terraria.StaticReference.Main.SetValue("menuMode", 0);
+            if (ModHelper.IsInWorld) {
+                if (!Terraria.VersionChecks.Is0_1) {
+                    if (setMenuMode) Terraria.StaticReference.Main.SetValue("menuMode", 0);
+                }
                 subInterface.SetState(uiState);
             } else {
                 if (Terraria.VersionChecks.Using_Modern_InGameInterface) {
@@ -349,7 +351,7 @@ namespace cModLoader.UI
         }
 
         private static bool previous_ingameOptionsWindow = false;
-        private static bool previous_gameMenu = false;
+        private static bool previous_inGame = false;
         public static void DrawModMenu(GameReference game) {
             if (subInterface == null) {
                 uiState = new cUIState();
@@ -376,10 +378,13 @@ namespace cModLoader.UI
 
                 uiState.Append(ModMenuBtn);
             }
-            int menuMode = game.main.GetValue<int>("menuMode");
-            bool gameMenu = game.main.GetValue<bool>("gameMenu");
+            bool inGame = ModHelper.IsInWorld;
+            int menuMode = 0;
+            if (!Terraria.VersionChecks.Is0_1) {
+                menuMode = game.main.GetValue<int>("menuMode");
+            }
 
-            if (!gameMenu) { // in game
+            if (inGame) { // in game
                 if (Terraria.VersionChecks.Using_Modern_InGameInterface) {
                     // do nothing, this is draws by Terraria
                 } else {
@@ -401,7 +406,7 @@ namespace cModLoader.UI
                 }
             } else { // not in game / in main menus
                 // close if changed
-                if (ModMenuOpen && previous_gameMenu != gameMenu) CloseGameMenu(false);
+                if (ModMenuOpen && previous_inGame != !inGame) CloseGameMenu(false);
                 ModMenuBtn.Text = "Open cModLoader Mod Menu";
                 ModMenuBtn.Alignment = new Vector2(0f, 0);
                 ModMenuBtn.Margin = new Vector4(10, 0, 10, 0);
@@ -419,7 +424,7 @@ namespace cModLoader.UI
                 DrawRawCursor(game);
             }
 
-            previous_gameMenu = gameMenu;
+            previous_inGame = inGame;
             if (Terraria.VersionChecks.Using_InGamePauseMenu) {
                 previous_ingameOptionsWindow = game.main.GetValue<bool>("ingameOptionsWindow");
             }

@@ -42,10 +42,85 @@ using System.Windows.Forms.VisualStyles;
 namespace cModLoader
 {
     /// <summary> Config for cModLoader, this is not the same as <see cref="ModComponents.Config"/></summary>
-    public class cModLoaderConfig {
+    internal class cModLoaderConfig {
 
-        static cModLoaderConfig() {
-            // do stuff, probably read config file
+        public static Config ModConfig;
+
+        //TODO: make mods load this way as well
+        public static void LoadConfig() {
+            ModConfig = new Config();
+            ModConfig.Add(new ConfigBoolean("DebugConsole", "Keep Console Alive (Requires Restart)", cModLoaderInitializer.Debug) {
+                OnSetValue = (_old, _new) => {
+                    cModLoaderInitializer.Debug = _new;
+                }
+            });
+            ModConfig.Add(new ConfigBoolean("ShowDebugText", "Show Debug Text", ShowDebugText) {
+                OnSetValue = (_old, _new) => {
+                    ShowDebugText = _new;
+                }
+            });
+            ModConfig.Add(new ConfigBoolean("PatchDisable", "Disable Patches", ForceDisablePatches, "Disabled", "Enabled") {
+                OnSetValue = (_old, _new) => {
+                    ForceDisablePatches = _new;
+                }
+            });
+            ModConfig.Add(new ConfigText("Text1", "Console Tests"));
+            ModConfig.Add(new ConfigButton("TextConsole", "Test Console", "Test") {
+                OnButtonPress = () => {
+                    Output.Print("Test Console");
+                }
+            });
+            ModConfig.Add(new ConfigButton("TextConsole2", "Test Console Error", "Test") {
+                OnButtonPress = () => {
+                    Output.Error("Test Console");
+                }
+            });
+            ModConfig.Add(new ConfigButton("TextConsole3", "Clear Console", "Clear") {
+                OnButtonPress = () => {
+                    Output.CustomWriter.ConsoleOutput.Clear();
+                }
+            });
+            ModConfig.Add(new ConfigText("Text2", "Other Tests"));
+            ModConfig.Add(new ConfigSlider("Slider1", "Slider Test", 0.5f));
+            ModConfig.Add(new ConfigButton("TestMessage", "Test Message Box", "Test") {
+                OnButtonPress = () => {
+                    try {
+                        Accessibility.Show("Message Box");
+                    }
+                    catch (Exception e) {
+                        Accessibility.PreferWindow = Accessibility.WindowType.Default;
+                        (ModConfig["ForceWindow"] as ConfigSelectToggle).SetValue(0);
+                        Accessibility.Show("Message box failed to open. Resetting to Default message box.\n\n" + e.ToString());
+                    }
+                }
+            });
+            // does not work, would need to recreate all UI elements before the next draw (i dont think this is true but something definitely goes wrong)
+            /*
+            if (!Terraria.VersionChecks.Raw_Using_LegacyUISystem) {
+                ModConfig.Add(new ConfigBoolean("ForceLegacy", "Force Legacy UI", false, "Disabled", "Enabled") {
+                    OnSetValue = (_old, _new) => {
+                        
+                        Terraria.VersionChecks.Using_LegacyUISystem = _new ? true : Terraria.VersionChecks.Raw_Using_LegacyUISystem;
+                    }
+                });
+            }
+            */
+            if (Terraria.VersionChecks.Using_LegacyUISystem) {
+                ModConfig.Add(new ConfigBoolean("LegacyBackground", "Show Debug Legacy Panel Background", false, "Showing", "Hidden") {
+                    OnSetValue = (_old, _new) => {
+                        UIUtils.Test_DrawBoundsLegacyUI = _new;
+                    }
+                });
+            }
+            ModConfig.Add(new ConfigText("Text3", "Unsafe Options, do not change."));
+            ModConfig.Add(new ConfigSelectToggle("ForceWindow", "Force Windows Mode", 0, new string[] { "Default", "Forms", "SDL3", "SDL2" }) {
+                OnSetValue = (_old, _new) => {
+                    Accessibility.PreferWindow = (Accessibility.WindowType)_new;
+                }
+            });
+            // pre-load config
+            var path = Path.GetCurrentConfigsFolder() + Path.DirectorySeparator + "cModLoader.cmlcfg";
+            ModConfig.LoadConfig(path);
         }
 
         public static bool ForceLegacyMenues = false;
@@ -106,7 +181,7 @@ namespace cModLoader
                 mod.modFileName = asm.Location.Substring(asm.Location.LastIndexOf(Path.DirectorySeparator) + 1);
                 modList.Add(mod);
                 Output.Print($"Loaded mod of type \"{mod.GetType().FullName}\" in \"{asm.Location}\"!");
-                mod.ModConfig.LoadConfig();
+                mod.ModConfig.LoadConfig(mod.GetConfigFile());
             }
         }
         /// <summary>
@@ -125,6 +200,7 @@ namespace cModLoader
     /// </summary>
     public class ModLoader
     {
+        /// <summary> Used for error handling, if a mod fails the game wont crash, tModLoader uses c#'s built in environments but this does not exist in .net Framework 4.5.2 </summary>
         internal struct ModContext {
             private static Stack<ModContext> ContextStack = new Stack<ModContext>();
             private static ModContext CurrentModContext;
@@ -605,6 +681,7 @@ namespace cModLoader
         }
         // i want a different name for this
         public static bool did = false;
+        // what is this for?
         public static bool allowIdle = false;
         /// <summary> Sets up things so cModLoader can run without patches. This function only works on Xna versions. </summary>
         public static void PatchlessXnaPreHook() {
@@ -829,69 +906,10 @@ namespace cModLoader
             ModDescription = "This is the default built in mod for cModLoader.\nIt does stuff.";
             ModAuthor = "crawdad105";
             ModVersion = BuildData.GET_DISPLAY(!Terraria.VersionChecks.Using_LegacyFontSystem);
-            ModUrl = "https://www.crawdad105.com";
+            ModUrl = "https://github.com/crawdad105/cModLoader";
 
-            ModConfig.Add(new ConfigBoolean("ShowDebugText", "Show Debug Text", cModLoaderConfig.ShowDebugText) {
-                OnSetValue = (_old, _new) => {
-                    cModLoaderConfig.ShowDebugText = _new;
-                }
-            });
-            ModConfig.Add(new ConfigBoolean("PatchDisable", "Disable Patches", cModLoaderConfig.ForceDisablePatches, "Disabled", "Enabled") {
-                OnSetValue = (_old, _new) => {
-                    cModLoaderConfig.ForceDisablePatches = _new;
-                }
-            });
-            ModConfig.Add(new ConfigText("Text1", "Console Tests"));
-            ModConfig.Add(new ConfigButton("TextConsole", "Test Console", "Test") {
-                OnButtonPress = () => {
-                    Output.Print("Test Console");
-                }
-            });
-            ModConfig.Add(new ConfigButton("TextConsole2", "Test Console Error", "Test") {
-                OnButtonPress = () => {
-                    Output.Error("Test Console");
-                }
-            });
-            ModConfig.Add(new ConfigButton("TextConsole3", "Clear Console", "Clear") {
-                OnButtonPress = () => {
-                    Output.CustomWriter.ConsoleOutput.Clear();
-                }
-            });
-            ModConfig.Add(new ConfigText("Text2", "Other Tests"));
-            ModConfig.Add(new ConfigSlider("Slider1", "Slider Test", 0.5f));
-            ModConfig.Add(new ConfigButton("TestMessage", "Test Message Box", "Test") {
-                OnButtonPress = () => { 
-                    try {
-                        Accessibility.Show("Message Box");
-                    } catch (Exception e) {
-                        Accessibility.PreferWindow = Accessibility.WindowType.Default;
-                        (ModConfig["ForceWindow"] as ConfigSelectToggle).SetValue(0);
-                        Accessibility.Show("Message box failed to open. Resetting to Default message box.\n\n" + e.ToString());
-                    }
-                }
-            });
-            // does not work, would need to recreate all UI elements before the next draw
-            //if (!Terraria.VersionChecks.Raw_Using_LegacyUISystem) {
-            //    ModConfig.Add(new ConfigBoolean("ForceLegacy", "Force Legacy UI", false, "Disabled", "Enabled") {
-            //        OnSetValue = (_old, _new) => {
-            //            
-            //            Terraria.VersionChecks.Using_LegacyUISystem = _new ? true : Terraria.VersionChecks.Raw_Using_LegacyUISystem;
-            //        }
-            //    });
-            //}
-            if (Terraria.VersionChecks.Using_LegacyUISystem) {
-                ModConfig.Add(new ConfigBoolean("LegacyBackground", "Show Debug Legacy Panel Background", false, "Showing", "Hidden") {
-                    OnSetValue = (_old, _new) => {
-                        UIUtils.Test_DrawBoundsLegacyUI = _new;
-                    }
-                });
-            }
-            ModConfig.Add(new ConfigText("Text3", "Unsafe Options, do not change."));
-            ModConfig.Add(new ConfigSelectToggle("ForceWindow", "Force Windows Mode", 0, new string[] { "Default", "Forms", "SDL3", "SDL2" }) {
-                OnSetValue = (_old, _new) => {
-                    Accessibility.PreferWindow = (Accessibility.WindowType)_new;
-                }
-            });
+            // set mod config
+            modConfig = cModLoaderConfig.ModConfig;
         }
 
         public override Texture2D GetModIcon() {
@@ -987,7 +1005,8 @@ namespace cModLoader
             } else { // 0.1 (or fallback)
                 if (cModLoaderConfig.ShowDebugText)
                     _BaseDrawDebug(game);
-                VeryLegacyVersionPatch._BaseDraw(game);
+                ModMenu.DrawModMenu(game);
+                //VeryLegacyVersionPatch._BaseDraw(game);
             }
         }
         internal static void _BaseDrawDebug(GameReference game) {

@@ -267,6 +267,7 @@ namespace cModLoader
             if (ver >= new Version(1, 2, 3, 0)) VersionChecks.Raw_Using_UtilsTextDrawing = true;
             if (ver >= new Version(1, 3, 4, 0)) VersionChecks.Raw_Using_Modern_UITextPanelUsingGeneric = true;
 
+            if (ver == new Version(0, 1, 0, 0)) VersionChecks.Is0_1 = true;
             if (ver >= new Version(1, 1, 0, 0)) VersionChecks._1_1AndUp = true;
             if (ver >= new Version(1, 2, 3, 0)) VersionChecks._1_2_3AndUp = true;
             if (ver >= new Version(1, 3, 0, 0)) VersionChecks._1_3AndUp = true;
@@ -357,6 +358,8 @@ namespace cModLoader
         /// <summary> Stuff for checking versions compatibility, full of a bunch of random things checks.<para>These were only checked on windows.</para></summary>
         public static class VersionChecks {
 
+            /// <summary> Is Terraria version 0.1 (aka Alpha). </summary>
+            public static bool Is0_1 { get; internal set; }
             /// <summary> Is Terraria version 1.1 and up. </summary>
             public static bool _1_1AndUp { get; internal set; }
             /// <summary> Is Terraria version 1.2.3 and up. </summary>
