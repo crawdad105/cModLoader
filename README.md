@@ -8,6 +8,10 @@ Its best at QoL mods, although i dislike QoL mods, and if you want mods that add
 <br><br>
 Using Mono.cecil there is a custom patcher that patches functions at an IL level which is the main selling point feature.
 And can be used to override or modify the IL code of Terraria.
+<br><br>
+[crawdad105 Website](https://crawdad105.com).<br>
+[Discord Server](https://crawdad105.com/discord).<br>
+Contact: Use whatever is convenient.
 <br>
 
 > [!IMPORTANT]

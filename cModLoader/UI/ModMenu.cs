@@ -249,7 +249,7 @@ namespace cModLoader.UI
         /// <summary> Opens a mod menu. Set <paramref name="menu"/> to <see langword="null"/> to open the mod list. </summary>
         public static void OpenGameMenu(UIMenu menu) {
             menu = menu ?? modListMenu;
-            if (ModHelper.IsInWorld) {
+            if (!ModHelper.IsInWorld) {
                 if (!Terraria.VersionChecks.Is0_1) {
                     Terraria.StaticReference.Main.SetValue("menuMode", 888);
                 }
@@ -274,10 +274,8 @@ namespace cModLoader.UI
         }
         /// <summary> Completely quits out of the mod menu. </summary>
         public static void CloseGameMenu(bool setMenuMode = true) {
-            if (ModHelper.IsInWorld) {
-                if (!Terraria.VersionChecks.Is0_1) {
-                    if (setMenuMode) Terraria.StaticReference.Main.SetValue("menuMode", 0);
-                }
+            if (!ModHelper.IsInWorld) {
+                if (setMenuMode) Terraria.StaticReference.Main.SetValue("menuMode", 0);
                 subInterface.SetState(uiState);
             } else {
                 if (Terraria.VersionChecks.Using_Modern_InGameInterface) {
@@ -406,7 +404,7 @@ namespace cModLoader.UI
                 }
             } else { // not in game / in main menus
                 // close if changed
-                if (ModMenuOpen && previous_inGame != !inGame) CloseGameMenu(false);
+                if (ModMenuOpen && previous_inGame != inGame) CloseGameMenu(false);
                 ModMenuBtn.Text = "Open cModLoader Mod Menu";
                 ModMenuBtn.Alignment = new Vector2(0f, 0);
                 ModMenuBtn.Margin = new Vector4(10, 0, 10, 0);

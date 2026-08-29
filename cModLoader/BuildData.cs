@@ -62,8 +62,8 @@ namespace cModLoader {
         public static string GET_DISPLAY(bool letter = true) => $"{(MAJOR == 0 ? "" : $"({MAJOR}) ")}{(letter ? GREEK[MINOR].ToString() : GREEK_WORD[MINOR])}.{PATCH}";
 
         /// <summary> The build number/count, increments every time the project was built or ran.<br/>Don't assume this counts every single versions of cModLoader, it can be set to whatever by the developer anyways.</summary>
-        public const int BuildNumber = 811;
+        public const int BuildNumber = 815;
         /// <summary> The build time, the Unix time stamp that the latest version was built. Uses <see cref="System.DateTime.Ticks"/> on <see cref="System.DateTime.Now"/></summary>
-        public const long BuildTime = 639235329608968363;
+        public const long BuildTime = 639235363228317446;
     }
 }
