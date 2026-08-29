@@ -15,7 +15,8 @@ Contact: Use whatever is convenient.
 <br>
 
 > [!IMPORTANT]
-> Linux only works in version 1.4.1 and up because i could not find hook location for older FNA versions.
+> Linux only works in version 1.4.1 and up because i could not find hook location for older FNA versions.<br>
+> I do not know how or if this works on servers, for now its not an implemented feature.
 
 > [!NOTE]
 > This is not supposed to rivel tModLoader or TerrariaModder however if enough people want features like ways to add items, NPCs and more i may consider it. Its not necessarily hard to do but keep in mind i would need seamless integration for every versions of Terraria and to understand how every version of Terraria works on Windows and Linux (and maybe MaxOS in the future).
