@@ -75,8 +75,7 @@ namespace cModLoader.Patching
     }
 
     /// <summary>
-    /// A custom patcher class used to patch, as Harmony and MonoMod seems to incorrectly create IL code causing crashes, see (https://github.com/pardeike/Harmony/issues/640) for a related topic.<br/>
-    /// This is an abstract method so you can create an instance of it which contains some stuff like <see cref="AddPatch"/>
+    /// A custom patcher class used to patch, as MonoMod/Harmony seems to incorrectly create IL code causing crashes, i think see (<see href="https://github.com/pardeike/Harmony/issues/640"/>) for a related topic.<br/>
     /// </summary>
     public static class cModPatch {
         /// <summary>
@@ -156,7 +155,7 @@ namespace cModLoader.Patching
             // clone instructions and keep track of mapping from old to new
             foreach (var instr in sourceMethod.Body.Instructions)
             {
-                // get intruction clone
+                // get instruction clone
                 // for some reason you cant just clone it, you need to do a bunch of other stuff
                 Instruction clone = null;
                 if (instr.Operand == null) clone = Instruction.Create(instr.OpCode);
@@ -184,7 +183,7 @@ namespace cModLoader.Patching
                     else if (op is Instruction[] targets)           clone = Instruction.Create(instr.OpCode, targets);
                     else if (op is VariableDefinition variable)     clone = Instruction.Create(instr.OpCode, variable);
                     else if (op is ParameterDefinition parameter)   clone = Instruction.Create(instr.OpCode, parameter);
-                    else throw new NotSupportedException($"Unsupported operand type: {instr.Operand.GetType().FullName} for opcode {instr.OpCode}");
+                    else throw new NotSupportedException($"Unsupported operand type: \"{instr.Operand.GetType().FullName}\" for opcode \"{instr.OpCode}\"");
                 }
 
                 il.Append(clone);
@@ -251,26 +250,42 @@ namespace cModLoader.Patching
                 }
                 // classType.Methods.First did not work when no elements exist
                 MethodDefinition func = null; // classType.Methods.First(m => m.Name == patch.FunctionName && m.ReturnType.FullName == patch.ReturnType && m.Parameters.Count == patch.ParameterCount);
+                bool foundName = false;
+                bool foundParamCount = false;
+                bool foundReturn = false;
                 int index = -1;
                 int count = 0;
                 for (int i = 0; i < classType.Methods.Count; i++) {
                     var m = classType.Methods[i];
-                    if (m.Name == patch.FunctionName && m.ReturnType.FullName == patch.ReturnType && m.Parameters.Count == patch.ParameterCount) {
-                        var pass = true;
-                        for (int j = 0; j < patch.ParameterCount; j++) {
-                            if (patch.ParameterTypes[j] != m.Parameters[j].ParameterType.FullName) {
-                                pass = false;
-                                break;
+                    if (m.Name == patch.FunctionName) {
+                        foundName = true;
+                        if (m.Parameters.Count == patch.ParameterCount) {
+                            foundParamCount = true;
+                            if (m.ReturnType.FullName == patch.ReturnType) {
+                                foundReturn = true;
+                                var pass = true;
+                                for (int j = 0; j < patch.ParameterCount; j++) {
+                                    if (patch.ParameterTypes[j] != m.Parameters[j].ParameterType.FullName) {
+                                        pass = false;
+                                        break;
+                                    }
+                                }
+                                if (pass) func = m;
                             }
                         }
-                        if (pass) func = m;
                     }
                 }
 
                 // IL modification will modify func if wf is null
                 if (func == null)
                 {
-                    Output.Print($" > Could not find function \"{patch.FunctionName}\" in \"{patch.ClassName}\" with {patch.ParameterCount} parameters.");
+                    if (foundName) {
+                        if (foundParamCount) {
+                            if (foundReturn) {
+                                Output.Print($" > Found function with name \"{patch.FunctionName}\" in \"{patch.ClassName}\" with {patch.ParameterCount} parameters and return type \"{patch.ReturnType}\" but non with matching parameter type(s).");
+                            } else Output.Print($" > Found function with name \"{patch.FunctionName}\" in \"{patch.ClassName}\" with {patch.ParameterCount} parameters but non with return type \"{patch.ReturnType}\".");
+                        } else Output.Print($" > Found function with name \"{patch.FunctionName}\" in \"{patch.ClassName}\" but parameter count (count: {patch.ParameterCount}) does not match.");
+                    } else Output.Print($" > Could not function with name \"{patch.FunctionName}\" in \"{patch.ClassName}\".");
                     continue;
                 }
 
@@ -279,20 +294,20 @@ namespace cModLoader.Patching
                 {
                     // check if functions match (there are probably some edge cases)
                     // TODO: add type matching for parameters (this could be hard because terraria references would need to match to objects)
-                    if (patch.ReturnType != wf.ReturnType.FullName)
+                    if (patch.ReturnType != wf.ReturnType.ToString().Replace("[", "<").Replace("]", ">"))
                     {
-                        Output.Print($" > Return types did match \"{patch.ReturnType}\" != \"{wf.ReturnType.FullName}\".");
+                        Output.Print($" > Return types didn't match replacement function \"{patch.ReturnType}\" != \"{wf.ReturnType.FullName}\".");
                         continue;
                     }
                     // check if param counts match
                     if (func.IsStatic && patch.ParameterCount != wf.GetParameters().Length)
                     {
-                        Output.Print($" > Parameter count types did match, \"{patch.FunctionName}\" count: {patch.ParameterCount} \"{wf.Name}\" count: {wf.GetParameters().Length} (perameters need to match for patching static functions).");
+                        Output.Print($" > Parameter count types didn't match replacement function, \"{patch.FunctionName}\" count: {patch.ParameterCount} \"{wf.Name}\" count: {wf.GetParameters().Length} (perameters need to match for patching static functions).");
                         continue;
                     }
                     else if (!func.IsStatic && patch.ParameterCount != (wf.GetParameters().Length - 1))
                     { // compare with - 1 to match instance peram
-                        Output.Print($" > Parameter count types did match, \"{patch.FunctionName}\" count: {patch.ParameterCount} \"{wf.Name}\" count: {wf.GetParameters().Length} (\"{wf.Name}\" needs all the same parameters as \"{patch.FunctionName}\" plus an instance object as the first parameter).");
+                        Output.Print($" > Parameter count types didn't match replacement function, \"{patch.FunctionName}\" count: {patch.ParameterCount} \"{wf.Name}\" count: {wf.GetParameters().Length} (\"{wf.Name}\" needs all the same parameters as \"{patch.FunctionName}\" plus an instance object as the first parameter).");
                         continue;
                     }
                     if (!funcPatchCount.ContainsKey(func)) funcPatchCount.Add(func, 0);
@@ -343,8 +358,8 @@ namespace cModLoader.Patching
             ms.Dispose();
 
             // output patched executable for debugging (this will not run on its own, the dll with the new function needs to also exist)
-            // if (cModLoaderInitializer.PatchOutOverride || cModLoaderInitializer.Debug) // if VirtualLaunch don't create any file
-            //     File.WriteAllBytes(realTerrariaPath.Substring(0, realTerrariaPath.Length - 4) + "_Patched.exe", patched);
+            if (cModLoaderInitializer.PatchOutOverride) // if VirtualLaunch don't create any file
+                File.WriteAllBytes(realTerrariaPath.Substring(0, realTerrariaPath.Length - 4) + "_Patched.exe", patched);
 
             return patched; // return byte[] array because loading the dll here will recall AssemblyResolve causing a stack overflow
 
@@ -388,12 +403,13 @@ namespace cModLoader.Patching
         public static Patch AddPatch(string Class, string FunctionName, string ReturnType, string[] ParameterTypes, MethodInfo NewFunction, ILModification ilModifications)
             => new Patch(Class, FunctionName, ReturnType, ParameterTypes, NewFunction, ilModifications, !cModLoaderConfig.ForceDisablePatches);
 
+        /// <summary> Internal because this overrides the disabled patch option. </summary>
         internal static Patch ForcePatch(string Class, string FunctionName, string ReturnType, string[] ParameterTypes, MethodInfo NewFunction, ILModification ilModifications)
             => new Patch(Class, FunctionName, ReturnType, ParameterTypes, NewFunction, ilModifications, true);
 
-        /// <summary> not ever called, just used for patch example </summary>
+        /// <summary> Never called, just used for patch example </summary>
         public static double HurtPatchExampleForNonStatic(object __instance, object a, int b, int c, bool d, bool e, bool f, int g, bool h) { return 0.0; }
-        /// <summary> not ever called, just used for patch example </summary>
+        /// <summary> Never called, just used for patch example </summary>
         public static double HurtPatchExampleForStatic(object a, int b, int c, bool d, bool e, bool f, int g, bool h) { return 0.0; }
     }
 

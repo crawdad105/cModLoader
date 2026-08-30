@@ -174,7 +174,7 @@ namespace cModLoader
                     var c = ModLoader.LoadDlls(); // Load Dlls so patches can work
                     if (c) Output.Print("Mods Loaded");
                     // load like this only if its a virtual launch
-                    LoadTerraria(); // load terraria before its loaded normally
+                    LoadTerraria(); // load terraria before its loaded normally [Why?]
                     LaunchTerraria(); // launch terraria
                 }
                 catch (Exception e) {
@@ -1474,7 +1474,7 @@ namespace cModLoader
             List<MethodBase> stackStringTrace = new List<MethodBase>();
 
             var mainMessage = $"Error: modContexts = null\n{GetExceptionMessage(e, ref stackStringTrace)}";
-            if (modContexts != null) {
+            if (modContexts != null && modContexts.Count > 0) {
                 // clear because we use it again
                 stackStringTrace.Clear();
                 ModLoader.ModContext mainContext = modContexts.Peek();

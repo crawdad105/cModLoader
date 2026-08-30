@@ -300,6 +300,10 @@ namespace cModLoader
                 }
             }
 
+            public static void DisplayException(Exception e) {
+                Accessibility.DisplayException(ContextStack, e, new StackTrace(true).GetFrames());
+            }
+
         }
 
         internal static bool CanLoadContent;
@@ -545,6 +549,7 @@ namespace cModLoader
                 }
             }
         }
+        /*
         internal static void PreUpdate(GameReference game) {
             foreach (var mod in ModContent.modList) {
                 ModContext.RunUnderModContext(mod, () => {
@@ -559,6 +564,7 @@ namespace cModLoader
                 });
             }
         }
+        */
         internal static void PreDraw(GameReference game) {
             game.spriteBatch.Begin();
             cModLoader._BasePreDraw(game);
@@ -589,11 +595,10 @@ namespace cModLoader
         public cModLoaderPre() {
             ModLoader.cModLoaderPreModInstance = this;
         }
-        public override bool ValidVersion() {
-            return true; 
-        }
+        public override bool ValidVersion() => true; // all versions
         // runs in LoadTerraria() before terraria is loaded and after AssembilyInit()
         public override void OnLoad() {
+            // this needs to be done differently incase in the future patching are extended to any assembily
             // we need this so we can load either Xna or FNA
             var c = new Microsoft.Xna.Framework.Color();
             if (!Terraria.IsFNALoaded) {
@@ -605,25 +610,32 @@ namespace cModLoader
                 cModPatch.ForcePatch("Terraria.Steam", "Init", "System.Void", new string[] { }, typeof(cModLoaderPre).GetMethod(nameof(InitSteam1)), null);
                 cModPatch.ForcePatch("Terraria.Social.SocialAPI", "Initialize", "System.Void", new string[] { "System.Nullable`1<Terraria.Social.SocialMode>" }, typeof(cModLoaderPre).GetMethod(nameof(InitSteam2)), null);
             }
-            if (cModLoaderConfig.ForceDisablePatches) {
-                
-            } else{
-                DefaultPatches.LoadPatches();
-                switch (Terraria.GameVersionType) {
-                    case Terraria.VersionType.Future: break;
-                    case Terraria.VersionType.Current: break;
-                    case Terraria.VersionType.Legacy: LegacyVersionPatch.LoadPatches(); break;
-                    case Terraria.VersionType.VeryLegacy: break;
-                    case Terraria.VersionType.Modern:
-                    case Terraria.VersionType.OldModern:
-                    case Terraria.VersionType.Old:
-                    case Terraria.VersionType.Unknown:
-                    default: Accessibility.Show($"Version {Terraria.GameVersionType} ({Terraria.GameVersion}) is not fully supported by cModLoader.\nIf you are developing a mod you will need to do ALL of the work."); break;
-                }
-            }
-        }
-        public override void OnStart() {
+
+            // used for debugging
+            //cModPatch.ForcePatch("Terraria.Program", "DisplayException", "System.Void", new string[] { "System.Exception" }, typeof(cModLoaderPre).GetMethod(nameof(DisplayException)), null);
             
+            /*
+            
+            // Patch fix for most 1.3 versions, does not work in most 1.3 versions because "name" is not an item property but im too lazy to fix it
+            // this type if fix is not good either, if cModLoader needs to fix Terraria to run it shouldn't exist.
+
+            var t = typeof(List<int>).ToString().Replace("[", "<").Replace("]", ">");
+            //Accessibility.Show($"PAtch Terraria.UI.ItemSorting/ItemSortingLayers::<.cctor>b__72\n{typeof(List<int>)}\n{typeof(List<int>).FullName}\n{typeof(List<int>).Name}\n{typeof(List<int>).AssemblyQualifiedName}\n{typeof(List<int>).IsSpecialName}\n{typeof(List<int>).Namespace}\nNew: {t}");
+            cModPatch.AddPatch(
+                "Terraria.UI.ItemSorting/ItemSortingLayers",  // base type
+                "<.cctor>b__72", // name
+                t, // return
+                new string[] {  // parameters
+                    "Terraria.UI.ItemSorting/ItemSortingLayer", 
+                    "Terraria.Item[]",
+                    t
+                },  
+                typeof(cModLoaderPre).GetMethod(nameof(Prefix)), // New
+                null // IL
+            );
+            */
+            
+            // removed other patches, maybe i add them properly later but idk
         }
         public override Mod RegisterMod() {
             return new cModLoader();
@@ -637,6 +649,28 @@ namespace cModLoader
         }
         public static void InitSteam2(object mode) {
             
+        }
+        public static void DisplayException(Exception e) {
+            ModLoader.ModContext.DisplayException(e);
+        }
+        public static List<int> Prefix(object _layer, object _inv, List<int> itemsToSort) {
+            Dynamic layer = new Dynamic(_layer);
+            Array inv = (Array)_inv;
+
+            List<int> indexesSortable = itemsToSort.Where(i => new Dynamic(inv.GetValue(i)).GetValue<int>("createWall") > 0 || new Dynamic(inv.GetValue(i)).GetValue<int>("createTile") >= 0).ToList();
+            var param = new object[] { indexesSortable, (object)inv };
+            layer.Invoke2("Validate", param);
+            foreach (var item in indexesSortable) itemsToSort.Remove(item);
+            indexesSortable.Sort((x, y) => {
+                int num = string.Compare(new Dynamic(inv.GetValue(x)).GetValue<string>("name"), new Dynamic(inv.GetValue(y)).GetValue<string>("name"), StringComparison.OrdinalIgnoreCase);
+                if (num == 0) num = new Dynamic(inv.GetValue(y)).GetValue<int>("stack").CompareTo(new Dynamic(inv.GetValue(x)).GetValue<int>("stack"));
+                if (num == 0) num = x.CompareTo(y); // fix
+                // old version does not work for some reason
+                //if (num == 0) num = ((x != y) ? (-1) : 0);
+                return num;
+            });
+
+            return itemsToSort;
         }
 
         /// 

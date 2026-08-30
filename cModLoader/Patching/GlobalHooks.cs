@@ -13,7 +13,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
-using static cModLoader.ModLoader;
 
 namespace cModLoader.Patching
 {
@@ -63,7 +62,10 @@ namespace cModLoader.Patching
             /// </para>
             /// </summary>
             public static event Action<GameReference> OnRawPostDraw;
-            /// <summary> Called when <see cref="Console.WriteLine()"/> is called<br/>Do NOT call anything that will write to console here or it will create an infinite loop. </summary>
+            /// <summary> 
+            /// Called when <see cref="Console.WriteLine()"/> is called<br/>Do NOT call anything that will write to console here or it will create an infinite loop.<br/>
+            /// This may not work, Linux takes back the console so it likely only works on windows but depending on how its run it might not work at all.
+            /// </summary>
             public static event Action<string> OnConsoleOutput;
             /// <summary>
             /// Called right before the mouse is drawn when not "in game" (not in a world) . Only works in versions after and including 1.3.3
@@ -85,17 +87,13 @@ namespace cModLoader.Patching
             }
             /// <summary> Before <see cref="Game.BeginDraw()"/> </summary>
             internal static void RawPreDraw(GameReference game) {
-                if (DefaultPatches.Draw == null) { // only run if not patched
-                    ModLoader.PreDraw(game);
-                }
+                ModLoader.PreDraw(game);
                 OnRawPreDraw?.Invoke(game);
             }
             /// <summary> After <see cref="Game.EndDraw()"/> </summary>
             internal static void RawPostDraw(GameReference game) {
                 OnRawPostDraw?.Invoke(game);
-                if (DefaultPatches.Draw == null) { // only run if not patched
-                    ModLoader.PostDraw(game);
-                }
+                ModLoader.PostDraw(game);
                 InputHelper.SetState();
             }
             /// <summary> Called when <see cref="Console.WriteLine()"/> </summary>
@@ -103,7 +101,7 @@ namespace cModLoader.Patching
                 OnConsoleOutput?.Invoke(text);
             }
             internal static bool PreMouseInterfaceDraw() {
-                ModContext.RunUnderModLoaderContext(() => {
+                ModLoader.ModContext.RunUnderModLoaderContext(() => {
                     var _ref = GameReference.StaticReference;
                     ModLoader.DrawInterface(_ref);
                     OnPreMouseInterface?.Invoke(_ref);                    
@@ -112,7 +110,7 @@ namespace cModLoader.Patching
             }
             internal static bool OptionsHookInterfaceDraw() {
                 var result = false;
-                ModContext.RunUnderModLoaderContext(() => {
+                ModLoader.ModContext.RunUnderModLoaderContext(() => {
                     var _ref = GameReference.StaticReference;
                     result = ModMenu.DrawInterface_11_IngameOptionsMenu_Hook(_ref);
                     OnOptionsInterface?.Invoke(_ref);
@@ -184,32 +182,5 @@ namespace cModLoader.Patching
             }
 
         }
-
-
-        /// <summary>  Use <see cref="ModComponents.Mod.OnPreUpdate(GameReference)"/> instead. </summary>
-        public static event Action<GameReference> OnPreUpdate;
-        /// <summary> Use <see cref="ModComponents.Mod.OnPostUpdate(GameReference)"/> instead. </summary>
-        public static event Action<GameReference> OnPostUpdate;
-        /// <summary> Use <see cref="ModComponents.Mod.OnPreDraw(GameReference)"/> instead. </summary>
-        public static event Action<GameReference> OnPreDraw;
-        /// <summary> Use <see cref="ModComponents.Mod.OnPostDraw(GameReference)"/> instead. </summary>
-        public static event Action<GameReference> OnPostDraw;
-        internal static void PreUpdate(GameReference game) {
-            ModLoader.PreUpdate(game);
-            OnPreUpdate?.Invoke(game);
-        }
-        internal static void PostUpdate(GameReference game) {
-            ModLoader.PostUpdate(game);
-            OnPostUpdate?.Invoke(game);
-        }
-        internal static void PreDraw(GameReference game) {
-            ModLoader.PreDraw(game);
-            OnPreDraw?.Invoke(game);
-        }
-        internal static void PostDraw(GameReference game) {
-            ModLoader.PostDraw(game);
-            OnPostDraw?.Invoke(game);
-        }
-
     }
 }

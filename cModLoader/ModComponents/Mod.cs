@@ -112,7 +112,7 @@ namespace cModLoader.ModComponents
         public virtual void OnInitialize() { }
         /// <summary>
         /// <para>
-        /// In modern UI versions this is called right before Terraria draws the mouse in game, not in menus (See <see cref="Terraria.VersionChecks.Using_LegacyUISystem"/>).<br/>
+        /// In modern UI versions this is called right before Terraria draws the mouse in game, not in main menus (See <see cref="Terraria.VersionChecks.Using_LegacyUISystem"/>).<br/>
         /// Draw scaling is set to UI.
         /// </para>
         /// <para>
@@ -133,9 +133,9 @@ namespace cModLoader.ModComponents
         public virtual void OnPostDraw(GameReference game) { }
 
         /// <summary> Called before Terraria updates. <para><see langword="⚠ Requires Patches"/></para></summary>
-        public virtual void OnPreUpdate(GameReference game) { }
+        //public virtual void OnPreUpdate(GameReference game) { }
         /// <summary> Called after Terraria updates. <para><see langword="⚠ Requires Patches"/></para></summary>
-        public virtual void OnPostUpdate(GameReference game) { }
+        //public virtual void OnPostUpdate(GameReference game) { }
 
     }
 }

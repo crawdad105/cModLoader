@@ -8,6 +8,7 @@ namespace cModLoader.Patching
     /// <summary> Patch class used to patch versions 0.7 to 1.0.6.1 </summary>
     internal class LegacyVersionPatch
     {
+        /*
         internal static void LoadPatches()
         {
             // add menu drawing patches
@@ -59,6 +60,7 @@ namespace cModLoader.Patching
         internal static void PreDrawMenu(object main) { }
         internal static void DrawMenu(object main) { }
         internal static void PostDrawMenu(object main) { }
+        */
     }
 
 }

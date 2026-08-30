@@ -13,6 +13,7 @@ namespace cModLoader.Patching
 {
     /// <summary> Patch class used for base/default patches mostly required to make every versions work seamlessly </summary>
     public class DefaultPatches {
+        /*
         internal static cModPatch.Patch UpdatePatch;
         internal static Action<GameTime> Update = null;
         internal static cModPatch.Patch DrawPatch;
@@ -33,7 +34,6 @@ namespace cModLoader.Patching
             Draw(game.gameTime);
             GlobalHooks.PostDraw(game);
         }
-        /*
         public static void LoadPatches() {
 
             cModPatch.AddPatch("Terraria.Main", ".ctor", "System.Void", null, null, (body, il, instrs, asm) => {
