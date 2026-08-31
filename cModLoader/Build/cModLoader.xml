@@ -1,0 +1,2046 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>cModLoader</name>
+    </assembly>
+    <members>
+        <member name="T:cModLoader.BuildData">
+            <summary>
+            Build data, this is modified when building cModLoader
+            </summary>
+        </member>
+        <member name="F:cModLoader.BuildData.MAJOR">
+            <summary> Major update counter.<para>Its more interesting if its always 0, it then seems like its always in development and updating, like BeamNG.drive</para></summary>
+        </member>
+        <member name="F:cModLoader.BuildData.MINOR">
+            <summary>
+            Minor update counter
+            <para>
+            Used for significant changes.<br/>
+            2: completely refactored all code.<br/>
+            1: original versions that did not support every versions (Closed "alpha", @Jayrony69 (youtube) is the only other person to have a version)<br/>
+            0: idk if it existed, i could argue there were a bunch of versions like this but i never really kept track.
+            </para>
+            </summary>
+        </member>
+        <member name="F:cModLoader.BuildData.PATCH">
+            <summary> Patch update counter.<para>Used for smaller insignificant updates.</para></summary>
+        </member>
+        <member name="F:cModLoader.BuildData.BUILD">
+            <summary> Arbitrary build number, same as <see cref="F:cModLoader.BuildData.BuildNumber"/>.<para>Changes when the program is ran or build during development.</para></summary>
+        </member>
+        <member name="M:cModLoader.BuildData.GET_DISPLAY(System.Boolean)">
+            <summary> Gets version text including only <see cref="F:cModLoader.BuildData.MINOR"/> and <see cref="F:cModLoader.BuildData.PATCH"/> (and <see cref="F:cModLoader.BuildData.MAJOR"/> if its not 0). <paramref name="letter"/> determines if it should use Greek letters or names.</summary>
+        </member>
+        <member name="F:cModLoader.BuildData.BuildNumber">
+            <summary> The build number/count, increments every time the project was built or ran.<br/>Don't assume this counts every single versions of cModLoader, it can be set to whatever by the developer anyways.</summary>
+        </member>
+        <member name="F:cModLoader.BuildData.BuildTime">
+            <summary> The build time, the Unix time stamp that the latest version was built. Uses <see cref="P:System.DateTime.Ticks"/> on <see cref="P:System.DateTime.Now"/></summary>
+        </member>
+        <member name="T:cModLoader.OS">
+            <summary>
+            Class with some stuff for checking operating system or underlying runtime stuff.
+            </summary>
+        </member>
+        <member name="F:cModLoader.OS.CurrentOSType">
+            <summary> The current OS type. </summary>
+        </member>
+        <member name="F:cModLoader.OS.SDLVersion">
+            <summary> The SDL version being used. </summary>
+        </member>
+        <member name="P:cModLoader.OS.PlatformWindows">
+            <summary>
+            Does the program thinks its running in windows. <see langword="true"/> for windows OR if its running through Wine (might depend on configuration).<br/>
+            This does not necessary prove its running in windows.
+            </summary>
+        </member>
+        <member name="P:cModLoader.OS.PlatformLinux">
+            <summary>
+            Does the program thinks its running in Linux. Seems to be <see langword="true"/> when running using proton (but could be tru for something else).<br/>
+            If this is <see langword="true"/> we can't use a lot of windows features. <br/>
+            This seems to be <see langword="false"/> when using Wine.<br/>
+            This may also be <see langword="true"/> for macOS but i cant confirm this.<br/>
+            To check if Terraria is actually the Linux versions use <see cref="P:cModLoader.Terraria.IsLinux"/>
+            </summary>
+        </member>
+        <member name="P:cModLoader.OS.IsWindows">
+            <summary>
+            Is the program being ran in windows. This is <see langword="true"/> if the platform is windows AND Wine is not detected.<br/>
+            </summary>
+        </member>
+        <member name="P:cModLoader.OS.IsWine">
+            <summary>
+            Is the program being ran through Wine. <see langword="true"/> if <see cref="M:cModLoader.Accessibility.Native.wine_get_version"/> didn't fail.<br/>
+            </summary>
+        </member>
+        <member name="P:cModLoader.OS.IsLinux">
+            <summary>
+            Is the program running in Linux. This is <see langword="true"/> if it detected Linux or if Wine was detected (could be edge cases).<br/>
+            To check if Terraria is actually the Linux versions use <see cref="P:cModLoader.Terraria.IsLinux"/>
+            </summary>
+        </member>
+        <member name="P:cModLoader.OS.IsSDL">
+            <summary>
+            Is SDL available. This is <see langword="true"/> if it detected SDL which should be the same as if <see cref="P:cModLoader.OS.IsLinux"/> is <see langword="true"/>.<br/>
+            This may be <see langword="true"/> on windows if i forgot to remove the dll path and you have SDL3 installed at the same directory that i (crawdad105) did.
+            </summary>
+        </member>
+        <member name="P:cModLoader.OS.IsSDL2">
+            <summary>
+            Is SDL2 available. This is <see langword="true"/> if it detected SDL2 otherwise if its <see langword="false"/> SDL3 was detected OR no sdl was detected.<br/>
+            </summary>
+        </member>
+        <member name="T:cModLoader.ModComponents.ConfigElement">
+            <summary> Default base class for config elements, this does not store an element its just a base for displaying stuff.<br/>This is not UI although is used in creating the UI. </summary>
+        </member>
+        <member name="F:cModLoader.ModComponents.ConfigElement.InternalName">
+            <summary> Internal name used for identification </summary>
+        </member>
+        <member name="F:cModLoader.ModComponents.ConfigElement.DisplayText">
+            <summary> External name displayed, this is accessed through <see cref="M:cModLoader.ModComponents.ConfigElement.GetDisplayText"/>, this can be overridden to dynamical change text. </summary>
+        </member>
+        <member name="F:cModLoader.ModComponents.ConfigElement.EncryptOutput">
+            <summary><see langword="⚠ Not Implemented"/>, this was an idea but im too lazy to implement it.<br/>If you really want encryption you can override the <see cref="!:ToConfigString"/> and <see cref="!:FromConfigString(string[])"/> functions.<br/>Would have been used to encrypt output data in config file so nobody tampers with it.<para>This can easily be bypassed if someone created another mod to read or change the value while the game is running.<br/>Or they could read the process memory and take the value.<br/>This is not meant to be any advanced algorithm, its probably fairly easy to decipher<br/>Its mainly just so unexperienced noobs don't try messing with your config</para> </summary>
+        </member>
+        <member name="M:cModLoader.ModComponents.ConfigElement.GetDisplayText">
+            <summary> Gets the display text for the config element. </summary>
+        </member>
+        <member name="M:cModLoader.ModComponents.ConfigElement.GetUIElement">
+            <summary> Gets the UI element associated with this config element. New instance created every call to reduce memory usage. </summary>
+        </member>
+        <member name="M:cModLoader.ModComponents.ConfigElement.ShouldSaveConfig">
+            <summary> Should return weather or not this config option should be saved to the config file. </summary>
+        </member>
+        <member name="M:cModLoader.ModComponents.ConfigElement.SaveConfigValue">
+            <summary> Should return a string (ideally a single line for clarity) to be placed in a config file </summary>
+        </member>
+        <member name="M:cModLoader.ModComponents.ConfigElement.ReadConfigValue(System.String)">
+            <summary> Should do whatever to parse config data. <paramref name="stringData"/> is the raw saved data.</summary>
+        </member>
+        <member name="M:cModLoader.ModComponents.ConfigElement.MissingConfigValueFallback">
+            <summary> Should do whatever when the config value is not found, probably just set as a default value or something.</summary>
+        </member>
+        <member name="M:cModLoader.ModComponents.ConfigElement.ShouldSaveConfig(cModLoader.ModComponents.Mod,cModLoader.ModComponents.ConfigElement)">
+            <summary> Calls <see cref="M:cModLoader.ModComponents.ConfigElement.ShouldSaveConfig"/> but wraps it in a mod context.<br/><paramref name="mod"/> can be <see langword="null"/>, or any mod. </summary>
+        </member>
+        <member name="M:cModLoader.ModComponents.ConfigElement.SaveConfigValue(cModLoader.ModComponents.Mod,cModLoader.ModComponents.ConfigElement)">
+            <summary> Calls <see cref="M:cModLoader.ModComponents.ConfigElement.ShouldSaveConfig"/> but wraps it in a mod context.<br/><paramref name="mod"/> can be <see langword="null"/>, or any mod. </summary>
+        </member>
+        <member name="M:cModLoader.ModComponents.ConfigElement.ReadConfigValue(cModLoader.ModComponents.Mod,cModLoader.ModComponents.ConfigElement,System.String)">
+            <summary> Calls <see cref="M:cModLoader.ModComponents.ConfigElement.ReadConfigValue(System.String)"/> but wraps it in a mod context.<br/><paramref name="mod"/> can be <see langword="null"/>, or any mod. </summary>
+        </member>
+        <member name="M:cModLoader.ModComponents.ConfigElement.MissingConfigValueFallback(cModLoader.ModComponents.Mod,cModLoader.ModComponents.ConfigElement)">
+            <summary> Calls <see cref="M:cModLoader.ModComponents.ConfigElement.MissingConfigValueFallback"/> but wraps it in a mod context.<br/><paramref name="mod"/> can be <see langword="null"/>, or any mod. </summary>
+        </member>
+        <member name="M:cModLoader.ModComponents.BaseConfigItem.GetRawValue">
+            <summary> Should return the config value. </summary>
+        </member>
+        <member name="M:cModLoader.ModComponents.BaseConfigItem.SetRawValue(System.Object)">
+            <summary> Should return the config value and set the config value. </summary>
+        </member>
+        <member name="T:cModLoader.ModComponents.ConfigItem`1">
+            <summary> Base typed config item, used as a base class for config element that store a value such as <see cref="T:cModLoader.ModComponents.ConfigBoolean"/>. </summary>
+        </member>
+        <member name="T:cModLoader.ModComponents.ConfigItem`1.ValueSetEvent">
+            <summary> Delegate used when the config value is set.<br/><paramref name="newValue"/> and <paramref name="oldValue"/> may be the same. </summary>
+        </member>
+        <member name="T:cModLoader.ModComponents.ConfigItem`1.ValueGetEvent">
+            <summary> Delegate used when the config value is gotten.</summary>
+        </member>
+        <member name="F:cModLoader.ModComponents.ConfigItem`1.OnSetValue">
+            <summary> This is invoked when <see cref="M:cModLoader.ModComponents.ConfigItem`1.SetValue(`0)"/> is called.<br/>New and old values may be the same.<br/>This never modifies the value. </summary>
+        </member>
+        <member name="F:cModLoader.ModComponents.ConfigItem`1.OnGetValue">
+            <summary> This is invoked when <see cref="M:cModLoader.ModComponents.ConfigItem`1.GetValue"/> is called.<br/>Can be used to change the value, this will NOT not the value.<br/>This never modifies the value. </summary>
+        </member>
+        <member name="M:cModLoader.ModComponents.ConfigItem`1.GetRawValue">
+            <summary> Should return the config value. </summary>
+        </member>
+        <member name="M:cModLoader.ModComponents.ConfigItem`1.SetRawValue(System.Object)">
+            <summary> Should return the config value and set the config value. </summary>
+        </member>
+        <member name="M:cModLoader.ModComponents.ConfigItem`1.SetValue(`0)">
+            <summary> Can be overridden to change default value set functionality. This is used when setting <see cref="F:cModLoader.ModComponents.ConfigItem`1.value"/>.<br/>Should return <paramref name="newValue"/> or whatever new value you want.<br/>By default this invokes <see cref="F:cModLoader.ModComponents.ConfigItem`1.OnSetValue"/>.</summary>
+        </member>
+        <member name="M:cModLoader.ModComponents.ConfigItem`1.GetValue">
+            <summary> Can be overridden to change default value get functionality. This is used when getting <see cref="F:cModLoader.ModComponents.ConfigItem`1.value"/>.<br/>Should return the value or whatever you want the value to be.<br/>By default this invokes <see cref="F:cModLoader.ModComponents.ConfigItem`1.OnGetValue"/>.</summary>
+        </member>
+        <member name="T:cModLoader.ModComponents.ConfigText">
+            <summary> Title text config element, can be used to separate config sections. </summary>
+        </member>
+        <member name="T:cModLoader.ModComponents.ConfigBoolean">
+            <summary> Config element with left text and a toggleable element on the right. Use <see cref="F:cModLoader.ModComponents.ConfigItem`1.OnSetValue"/> to do stuff when the value changes (when the element is toggled). </summary>
+        </member>
+        <member name="T:cModLoader.ModComponents.ConfigSelectToggle">
+            <summary> Config element with left text and a toggleable element on the right. Use <see cref="F:cModLoader.ModComponents.ConfigItem`1.OnSetValue"/> to do stuff when the value changes (when the element is toggled). </summary>
+        </member>
+        <member name="T:cModLoader.ModComponents.ConfigButton">
+            <summary> Config element with left text and a button on the right. Use <see cref="F:cModLoader.ModComponents.ConfigButton.OnButtonPress"/> to do stuff when the button is pressed. </summary>
+        </member>
+        <member name="T:cModLoader.ModComponents.ConfigSlider">
+            <summary> Config element with left text and a slider element on the right. In legacy UI versions this is a + and - button, not a slider. </summary>
+        </member>
+        <member name="T:cModLoader.ModComponents.Config">
+            <summary> Configuration settings for your mod. </summary>
+        </member>
+        <member name="F:cModLoader.ModComponents.Config.Items">
+            <summary> Config elements. </summary>
+        </member>
+        <member name="P:cModLoader.ModComponents.Config.Count">
+            <summary> Gets number of config items. </summary>
+        </member>
+        <member name="P:cModLoader.ModComponents.Config.Item(System.Int32)">
+            <summary> Gets a given config element. Returns <see langword="null"/> if no elements are found. </summary>
+        </member>
+        <member name="P:cModLoader.ModComponents.Config.Item(System.String)">
+            <summary> Gets a given config element using its internal name. Returns <see langword="null"/> if no elements are found. </summary>
+        </member>
+        <member name="M:cModLoader.ModComponents.Config.SaveConfig(System.String,System.Boolean)">
+            <summary> Saves config data. By default this is called when pressing the "Back and Save" button in the config menu.</summary>
+        </member>
+        <member name="M:cModLoader.ModComponents.Config.LoadConfig(System.String)">
+            <summary> Loads config data. By default this is called when and instance of this config is created (once per game session).<br/>Feel free to call it yourself, use <see cref="M:cModLoader.ModComponents.Mod.GetConfigFile"/> to get the path.</summary><returns>If the config was loaded.</returns>
+        </member>
+        <member name="M:cModLoader.ModComponents.Config.Add(cModLoader.ModComponents.ConfigElement)">
+            <summary> Adds a config element to the config. </summary>
+        </member>
+        <member name="P:cModLoader.ModComponents.ModItem.stack">
+            <summary> Item stack. </summary>
+        </member>
+        <member name="P:cModLoader.ModComponents.ModItem.type">
+            <summary> Item ID. </summary>
+        </member>
+        <member name="P:cModLoader.ModComponents.ModItem.Name">
+            <summary> Item name. </summary>
+        </member>
+        <member name="T:cModLoader.ModComponents.Mod">
+            <summary> A mod class for creating mods for cModLoader. Use <see cref="T:cModLoader.ModComponents.PreMod"/> to initialize your mod </summary>
+        </member>
+        <member name="M:cModLoader.ModComponents.Mod.GetConfigName">
+            <summary> Gets a safe file name using the mod's name for the config.</summary>
+        </member>
+        <member name="M:cModLoader.ModComponents.Mod.GetConfigFile">
+            <summary> Gets the config file path. </summary>
+        </member>
+        <member name="M:cModLoader.ModComponents.Mod.GetFullFilePath">
+            <summary> Gets the full mod path. <para>eg. <c>c:/path/to/mod/yourMod.dll</c> </para></summary>
+        </member>
+        <member name="M:cModLoader.ModComponents.Mod.GetDirectoryPath">
+            <summary> Gets the directory of the mod. Includes the last path seperator. This should be the default cModLoader mods folder. <para>eg. <c>c:/path/to/mod</c> </para></summary>
+        </member>
+        <member name="M:cModLoader.ModComponents.Mod.GetFileName">
+            <summary> Gets the file name of the mod. This includes file ending. <para>eg. <c>yourMod.dll</c> </para></summary>
+        </member>
+        <member name="M:cModLoader.ModComponents.Mod.GetRawFileName">
+            <summary> Gets the file name of the mod. Does not include file ending. <para>eg. <c>yourMod</c> </para></summary>
+        </member>
+        <member name="F:cModLoader.ModComponents.Mod.ModName">
+            <summary> The name of your mod </summary>
+        </member>
+        <member name="F:cModLoader.ModComponents.Mod.ModDescription">
+            <summary> The description of your mod </summary>
+        </member>
+        <member name="F:cModLoader.ModComponents.Mod.ModAuthor">
+            <summary> The mods author </summary>
+        </member>
+        <member name="F:cModLoader.ModComponents.Mod.ModVersion">
+            <summary> The version of your mod (this can be any string instead of just "X.Y.Z") </summary>
+        </member>
+        <member name="F:cModLoader.ModComponents.Mod.ModUrl">
+            <summary> The web page associated with your mod. This could be the Github page, wiki or whatever you want. This only works for http and https protocols. </summary>
+        </member>
+        <member name="F:cModLoader.ModComponents.Mod.ModIcon">
+            <summary> The mods icon. Should be gotten using <see cref="M:cModLoader.ModComponents.Mod.GetModIcon"/> as this should also load the icon. </summary>
+        </member>
+        <member name="F:cModLoader.ModComponents.Mod.modConfig">
+            <summary> Mod config, if you do not set this it gets set when <see cref="P:cModLoader.ModComponents.Mod.ModConfig"/> is gotten.</summary>
+        </member>
+        <member name="P:cModLoader.ModComponents.Mod.ModConfig">
+            <summary> The mod's config options. A new config is created if it was not already set by the mod.</summary>
+        </member>
+        <member name="M:cModLoader.ModComponents.Mod.GetModIcon">
+            <summary> Gets this mod's icon. Checks for a png in the same directory with the same name as the dll file by default.<br/>You can override this to load internal files or whatever. You are also responsible for caching into <see cref="F:cModLoader.ModComponents.Mod.ModIcon"/> or something.</summary>
+        </member>
+        <member name="M:cModLoader.ModComponents.Mod.GetConfigMenu">
+            <summary> 
+            Returns a config UI, created when needed so and instance isn't stored for every mod.<br/>
+            See <see cref="T:cModLoader.ModComponents.Config"/> or <see cref="P:cModLoader.ModComponents.Mod.ModConfig"/> to properly modify config values.
+            <para> Override this function to modify default UI. </para>
+            </summary>
+        </member>
+        <member name="M:cModLoader.ModComponents.Mod.GetInfoMenu">
+            <summary> 
+            Returns an information UI, created when needed so and instance isn't stored for every mod.<br/>
+            By default this displays the mod description (<see cref="F:cModLoader.ModComponents.Mod.ModDescription"/>).
+            <para> Override this function to modify default UI. </para>
+            </summary>
+        </member>
+        <member name="M:cModLoader.ModComponents.Mod.GetModListPanel">
+            <summary> 
+            Returns the mod panel in the mod list.<br/>
+            By default this displays some stuff, however you could return <see langword="null"/> so no panel will be shown (the mod still exist).
+            <para> Override this function to modify default UI. </para>
+            </summary>
+        </member>
+        <member name="M:cModLoader.ModComponents.Mod.OnInitialize">
+            <summary>
+            On windows this is called on the second update tick of Terraria before anything happens.<br/>
+            On Linux this is called on the first tick of Terraria before anything happens.<br/>
+            This is also right after you call <see cref="!:PreMod.RegisterMod(Mod)"/>.
+            </summary>
+        </member>
+        <member name="M:cModLoader.ModComponents.Mod.DrawInterface(cModLoader.Utils.GameReference)">
+            <summary>
+            <para>
+            In modern UI versions this is called right before Terraria draws the mouse in game, not in main menus (See <see cref="P:cModLoader.Terraria.VersionChecks.Using_LegacyUISystem"/>).<br/>
+            Draw scaling is set to UI.
+            </para>
+            <para>
+            In legacy UI versions this is called right after everything is draw, but the mouse is drawn again after so it should match the modern UI.
+            </para>
+            See <see cref="P:cModLoader.Terraria.VersionChecks.Using_LegacyUISystem"/> for modern and legacy UI versions.<br/>
+            This will never run if Terraria.Main.hideUI is <see langword="true"/>.<br/>
+            <see langword="⚠ Is not called in Terraria versions 1.3 to 1.3.2.1 (inclusive)."/>
+            </summary>
+        </member>
+        <member name="M:cModLoader.ModComponents.Mod.OnPreDraw(cModLoader.Utils.GameReference)">
+            <summary> Called before Terraria does anything related to drawing.</summary>
+        </member>
+        <member name="M:cModLoader.ModComponents.Mod.OnPostDraw(cModLoader.Utils.GameReference)">
+            <summary> Called after Terraria completely finishes anything related to drawing.</summary>
+        </member>
+        <member name="T:cModLoader.ModComponents.PreMod">
+            <summary>
+            <para>Pre-mod for doing things before you mod is loaded override <see cref="M:cModLoader.ModComponents.PreMod.RegisterMod"/> to register your mod.</para>
+            <para>You can NOT reference the terraria assembily in this class or else cModLoader will crash.</para>
+            </summary>
+        </member>
+        <member name="F:cModLoader.ModComponents.PreMod.SupportedVersions">
+            <summary> Used so the mod loader doesn't break when trying to patch on the wrong versions. Set this in the contractor. </summary>
+        </member>
+        <member name="M:cModLoader.ModComponents.PreMod.ValidVersion">
+            <summary>
+            This is the first thing ran after the constructor dictating whether or not this mod should be loaded.<br/>If this returns <see langword="true"/> the mod will continue to load, if <see langword="false"/> it will NOT continue and will be discarded.<br/>By default it checks <see cref="F:cModLoader.ModComponents.PreMod.SupportedVersions"/> however you can override and change it.
+            <para> Technically you could run some code here and return <see langword="false"/> to do things like patch Terraria then not load a pre-mod. </para>
+            </summary>
+        </member>
+        <member name="M:cModLoader.ModComponents.PreMod.OnLoad">
+            <summary>
+            <para>Called when an instance of this class is created. This is before Terraria is loaded. </para>
+            <para>Add patches through <see cref="M:cModLoader.Patching.cModPatch.AddPatch(System.String,System.String,System.String,System.String[],System.Reflection.MethodInfo)"/><br/>or run other code here before Terraria is loaded.</para>
+            </summary>
+        </member>
+        <member name="M:cModLoader.ModComponents.PreMod.OnStart">
+            <summary>
+            <para>
+            <paramref name="Windows"/>: Called on the second update tick of Terraria before anything happens.
+            </para>
+            <para>
+            <paramref name="Linux"/>: Called on the first tick of Terraria before anything happens.
+            </para>
+            </summary>
+        </member>
+        <member name="M:cModLoader.ModComponents.PreMod.RegisterMod">
+            <summary> 
+            This is where your mod is loaded. This will end up calling <see cref="M:cModLoader.ModComponents.Mod.OnInitialize"/>.<br/>
+            By default this returns <see langword="null"/>, if you want to do anything meaningly you should override it.
+            <para>
+            Called directly after <see cref="M:cModLoader.ModComponents.PreMod.OnStart"/>
+            </para>
+            </summary>
+        </member>
+        <member name="T:cModLoader.UI.ModListItem">
+            <summary> A custom class used for mod list items </summary>
+        </member>
+        <member name="T:cModLoader.UI.DrawnDetails">
+            <summary> Used as output data from drawing. </summary>
+        </member>
+        <member name="F:cModLoader.UI.DrawnDetails.bounds">
+            <summary> The calculated bounds of the element drawn </summary>
+        </member>
+        <member name="F:cModLoader.UI.DrawnDetails.outerBounds">
+            <summary> The calculated bounds of the element drawn including margin and padding </summary>
+        </member>
+        <member name="F:cModLoader.UI.DrawnDetails.hovering">
+            <summary> Is the mouse over the element </summary>
+        </member>
+        <member name="F:cModLoader.UI.DrawnDetails.hovered">
+            <summary> Did the mouse just go over the element </summary>
+        </member>
+        <member name="F:cModLoader.UI.DrawnDetails.unhovered">
+            <summary> Did the mouse just leave the element </summary>
+        </member>
+        <member name="F:cModLoader.UI.DrawnDetails.clicked">
+            <summary> Was the element clicked </summary>
+        </member>
+        <member name="T:cModLoader.UI.LegacyUserInterface">
+            <summary> Substitute for Terraria's UserInterface for legacy UI. </summary>
+        </member>
+        <member name="M:cModLoader.UI.LegacyUserInterface.Draw(cModLoader.Utils.GameReference)">
+            <summary> Draw (which also updates) the current state.</summary>
+        </member>
+        <member name="T:cModLoader.UI.LegacyUIContainer">
+            <summary> Basically Terraria's UIElement but for legacy UI. </summary>
+        </member>
+        <member name="F:cModLoader.UI.LegacyUIContainer._overflowHiddenRasterizerState">
+            <summary> IDK what this is for but its what Terraria uses for clipping so i guess its important.</summary>
+        </member>
+        <member name="M:cModLoader.UI.LegacyUIContainer.DoClick">
+            <summary> Simulates a click. </summary>
+        </member>
+        <member name="F:cModLoader.UI.LegacyUIContainer._dimensions">
+            <summary> Dimension not including margin or padding </summary>
+        </member>
+        <member name="F:cModLoader.UI.LegacyUIContainer._innerDimensions">
+            <summary> Dimension including margin and padding </summary>
+        </member>
+        <member name="F:cModLoader.UI.LegacyUIContainer.Info_Cache">
+            <summary> Used as cache to not create an instance every draw call </summary>
+        </member>
+        <member name="M:cModLoader.UI.LegacyUIContainer.GetInnerDimensions">
+            <summary> Gets the dimension not including margin or padding </summary>
+        </member>
+        <member name="M:cModLoader.UI.LegacyUIContainer.GetDimensions">
+            <summary> Gets the dimension including margin and padding </summary>
+        </member>
+        <member name="M:cModLoader.UI.LegacyUIContainer.ContainsPoint(Microsoft.Xna.Framework.Vector2)">
+            <summary> Does the element contain <paramref name="point"/>. </summary>
+        </member>
+        <member name="M:cModLoader.UI.LegacyUIContainer.SetPadding(System.Single)">
+            <summary> Sets all side's padding to <paramref name="pixels"/>. </summary>
+        </member>
+        <member name="F:cModLoader.UI.LegacyUIContainer.BaseParentSizeOverride">
+            <summary> Overrides the size of the parent or default size.</summary>
+        </member>
+        <member name="M:cModLoader.UI.LegacyUIContainer.Recalculate">
+            <summary> Copied from Terraria. (from 1.3.0.1 but added margin from newer versions) </summary>
+        </member>
+        <member name="M:cModLoader.UI.LegacyUIContainer.RecalculateChildren">
+            <summary> Copied from Terraria. </summary>
+        </member>
+        <member name="E:cModLoader.UI.LegacyUIContainer.DrawSelfExtension">
+            <summary> Runs in <see cref="M:cModLoader.UI.LegacyUIContainer.DrawSelf(cModLoader.Utils.GameReference)"/> before anything is draw but after calculations.</summary>
+        </member>
+        <member name="M:cModLoader.UI.LegacyUIContainer.Draw(cModLoader.Utils.GameReference)">
+            <summary> Draws element and child elements. </summary>
+        </member>
+        <member name="M:cModLoader.UI.LegacyUIContainer.GetChildren">
+            <summary> Gets the list of children, normally Terraria does not allow for this. </summary>
+        </member>
+        <member name="T:cModLoader.UI.LegacyUIText">
+            <summary> Substitute for Terraria's UIText for legacy UI. </summary>
+        </member>
+        <member name="F:cModLoader.UI.LegacyUIText.TextPixelOffset">
+            <summary> Pixel offset for text drawing. This is not a thing in vanilla Terraria's modern UI. </summary>
+        </member>
+        <member name="F:cModLoader.UI.LegacyUIText.FitToText">
+            <summary> Weather or not to use the text size as the element size. If <see langword="true"/> <see cref="F:cModLoader.UI.LegacyUIContainer.Width"/> and <see cref="F:cModLoader.UI.LegacyUIContainer.Height"/> will be overriden. </summary>
+        </member>
+        <member name="M:cModLoader.UI.LegacyUIText.GetFont">
+            <summary> Returns either a <see cref="T:Microsoft.Xna.Framework.Graphics.SpriteFont"/> or Terraria's custom DynamicSpriteFont based off of <see cref="P:cModLoader.Terraria.VersionChecks.Using_LegacyFontSystem"/></summary>
+        </member>
+        <member name="T:cModLoader.UI.LegacyUIState">
+            <summary> Substitute for Terraria's UIState for legacy UI. </summary>
+        </member>
+        <member name="T:cModLoader.UI.LegacyUIScroll">
+            <summary> Substitute for Terraria's UIList for legacy UI. </summary>
+        </member>
+        <member name="F:cModLoader.UI.LegacyUIScroll._innerList">
+            <summary> Used as container from scrolling, needed or else the top level element will have all children, including scroll bar, act as a scrolling object.</summary>
+        </member>
+        <member name="T:cModLoader.UI.LegacyUINumericUpDown">
+            <summary> Substitute for Terraria's UIColoredSlider for legacy UI. </summary>
+        </member>
+        <member name="P:cModLoader.UI.UIMenu.Title">
+            <summary> Gets or sets the title of the menu. </summary>
+        </member>
+        <member name="F:cModLoader.UI.ModMenu.ModMenuOpen">
+            <summary> Is there a modded menu open. This is set by <see cref="M:cModLoader.UI.ModMenu.OpenGameMenu(cModLoader.UI.UIMenu)"/> and <see cref="M:cModLoader.UI.ModMenu.CloseGameMenu(System.Boolean)"/></summary>
+        </member>
+        <member name="M:cModLoader.UI.ModMenu.OpenGameMenu(cModLoader.UI.UIMenu)">
+            <summary> Opens a mod menu. Set <paramref name="menu"/> to <see langword="null"/> to open the mod list. </summary>
+        </member>
+        <member name="M:cModLoader.UI.ModMenu.CloseGameMenu(System.Boolean)">
+            <summary> Completely quits out of the mod menu. </summary>
+        </member>
+        <member name="M:cModLoader.UI.ModMenu.DrawInterface_11_IngameOptionsMenu_Hook(cModLoader.Utils.GameReference)">
+            <summary> Hook for "DrawInterface_11_IngameOptionsMenu" UI interface, this is hooked in <see cref="T:cModLoader.cModLoader"/>.<br/>Used in versions after and including 1.3.3.</summary>
+        </member>
+        <member name="M:cModLoader.UI.ModMenu.DrawRawCursor(cModLoader.Utils.GameReference)">
+            <summary> Only works in the legacy UI system. See <see cref="P:cModLoader.Terraria.VersionChecks.Using_LegacyUISystem"/> </summary>
+        </member>
+        <member name="T:cModLoader.UI.Positioning">
+            <summary> Copy of Terraria's StyleDimension, similar to this <see cref="T:cModLoader.UI.UIUtils.ModernReferences.StyleDimension_Reference"/> but not only for the modern UI.<para>Developer note: we can not put instance functions in here that modify values because the getters and setters in <see cref="T:cModLoader.UI.cUIElement"/> wont work.</para></summary>
+        </member>
+        <member name="T:cModLoader.UI.RectangleF">
+            <summary> Copy of Terraria's CalculatedStyle, similar to this <see cref="T:Microsoft.Xna.Framework.Rectangle"/> but for floats. System.Drawing has a float rectangle but Linux doesn't like that. </summary>
+        </member>
+        <member name="T:cModLoader.UI.EventReference">
+            <summary> General handler used for events.<br/><paramref name="event"/> will be the normal Terraria event type and <see langword="null"/> in the legacy UI.<br/><paramref name="listeningElement"/> will be the native object regardless of version.</summary>
+        </member>
+        <member name="T:cModLoader.UI.cUserInterface">
+            <summary>cModLoader specific UI wrapper. This wraps Terraria's UserInterface for modern UI and <see cref="T:cModLoader.UI.LegacyUIState"/> for legacy UI.</summary>
+        </member>
+        <member name="F:cModLoader.UI.cUserInterface.forceDisableModernUpdate">
+            <summary>
+            Some versions using modern UI put update and draw in the same place and dont have a dedicated update function<br/>
+            so this is used to disable it if it fails.
+            </summary>
+        </member>
+        <member name="P:cModLoader.UI.cUserInterface.native">
+            <summary> Not accessible outside of the class because the type may be unknown.<br/>Ideally you should use <see cref="P:cModLoader.UI.cUserInterface.ModernNative"/>, <see cref="P:cModLoader.UI.cUserInterface.LegacyNative"/> or <see cref="!:GetNative&lt;T&gt;"/> to get the value.</summary>
+        </member>
+        <member name="F:cModLoader.UI.cUserInterface.IsLegacy">
+            <summary> Used instead of directly using <see cref="P:cModLoader.Terraria.VersionChecks.Using_LegacyUISystem"/>, this could be used to force modern or legacy UI but i have not tested that. </summary>
+        </member>
+        <member name="P:cModLoader.UI.cUserInterface.ModernNative">
+            <summary> Gets the modern Terraria UI element as a <see cref="T:cModLoader.Utils.Dynamic"/> type. </summary>
+        </member>
+        <member name="P:cModLoader.UI.cUserInterface.LegacyNative">
+            <summary> Gets the legacy UI element as a <see cref="T:cModLoader.UI.LegacyUserInterface"/> type. </summary>
+        </member>
+        <member name="P:cModLoader.UI.cUserInterface.CurrentState">
+            <summary> Gets or sets the state of the interface.</summary>
+        </member>
+        <member name="M:cModLoader.UI.cUserInterface.SetState(cModLoader.UI.cUIState)">
+            <summary> Sets the state of the interface to <paramref name="newState"/>.</summary>
+        </member>
+        <member name="M:cModLoader.UI.cUserInterface.SetState(cModLoader.UI.UIMenu)">
+            <summary> Sets the state of the interface using a <see cref="T:cModLoader.UI.UIMenu"/>.</summary>
+        </member>
+        <member name="M:cModLoader.UI.cUserInterface.Draw(cModLoader.Utils.GameReference)">
+            <summary> Draws and updates the UserInterface </summary>
+        </member>
+        <member name="T:cModLoader.UI.cUIElementOverride">
+            <summary>cModLoader specific UI wrapper. This is the same as <see cref="T:cModLoader.UI.cUIElement"/> but gives access to override functions. (only 1 for now)<br/>These override functions are implemented by default for the legacy UI, this just exposes them easily.<para>Overridden functions WILL NOT run the original (in modern UI), use <see cref="T:cModLoader.Utils.Dynamic"/> or something to do that.</para></summary>
+        </member>
+        <member name="M:cModLoader.UI.cUIElementOverride.DrawSelf_Intermediate(System.Object)">
+            <summary> An intermediate stage for Terraria's UIElement DrawSelf override, this isn't needed but its easier and good for debugging.<para>Don't call this, this is public because its easier.</para></summary>
+        </member>
+        <member name="E:cModLoader.UI.cUIElementOverride.DrawSelf">
+            <summary> Modern UI: Adds code to the DrawSelf function in UIElement.<br/>Legacy UI: Does the same as modern but for <see cref="T:cModLoader.UI.LegacyUIContainer"/>, this runs after calculations but before anything should be draw.</summary>
+        </member>
+        <member name="T:cModLoader.UI.cUILegacyBridge">
+            <summary>cModLoader specific UI wrapper. This is used to convert Legacy UI to modern UI.<br/>This is a very minimal class to get things working, settings values does not transalte to the legacy element.</summary>
+        </member>
+        <member name="T:cModLoader.UI.cUIElement">
+            <summary>cModLoader specific UI wrapper. This wraps Terraria's UIElement for modern UI and <see cref="T:cModLoader.UI.LegacyUIContainer"/> for legacy UI. <br/>Not the same as Terraria's UIElement, this is specifically used for cModLoader as a wrapper </summary>
+        </member>
+        <member name="F:cModLoader.UI.cUIElement.WrapperParent">
+            <summary> 
+            The <see cref="T:cModLoader.UI.cUIElement"/> wrapper parent, this is not the native object's parent, although you could obtain it through this.<br/>
+            If the native objects parent was set manually this will not update.
+            <para>
+            This is modified through <see cref="M:cModLoader.UI.cUIElement.Append(cModLoader.UI.cUIElement)"/>, <see cref="M:cModLoader.UI.cUIElement.RemoveChild(cModLoader.UI.cUIElement)"/> and <see cref="M:cModLoader.UI.cUIElement.RemoveFromParent"/>
+            </para>
+            </summary>
+        </member>
+        <member name="F:cModLoader.UI.cUIElement.WrapperChildren">
+            <summary>
+            The <see cref="T:cModLoader.UI.cUIElement"/> wrapper children, this is not the native object's children, although you could obtain it through this.<br/>
+            If the native objects children are changed manually this will not update.
+            <para>
+            This is modified through <see cref="M:cModLoader.UI.cUIElement.Append(cModLoader.UI.cUIElement)"/>, <see cref="M:cModLoader.UI.cUIElement.RemoveChild(cModLoader.UI.cUIElement)"/> and <see cref="M:cModLoader.UI.cUIElement.RemoveFromParent"/>
+            </para>
+            </summary>
+        </member>
+        <member name="P:cModLoader.UI.cUIElement.native">
+            <summary> Not accessible outside of the class because the type may be unknown.<br/>Ideally you should use <see cref="P:cModLoader.UI.cUIElement.ModernNative"/>, <see cref="P:cModLoader.UI.cUIElement.LegacyNative"/> or <see cref="M:cModLoader.UI.cUIElement.GetNative``1"/> to get the value.</summary>
+        </member>
+        <member name="F:cModLoader.UI.cUIElement.IsLegacy">
+            <summary> Used instead of directly using <see cref="P:cModLoader.Terraria.VersionChecks.Using_LegacyUISystem"/>, this could be used to force modern or legacy UI but i have not tested that. </summary>
+        </member>
+        <member name="P:cModLoader.UI.cUIElement.ModernNative">
+            <summary> Gets the modern Terraria UI element as a <see cref="T:cModLoader.Utils.Dynamic"/> type. </summary>
+        </member>
+        <member name="P:cModLoader.UI.cUIElement.LegacyNative">
+            <summary> Gets the legacy UI element as a <see cref="T:cModLoader.UI.LegacyUIContainer"/> type. </summary>
+        </member>
+        <member name="M:cModLoader.UI.cUIElement.GetNative``1">
+            <summary> Gets the UI element as <typeparamref name="T"/>, this can be useful for modern Terraria. </summary>
+        </member>
+        <member name="P:cModLoader.UI.cUIElement.Width">
+            <summary> Modern UI: Modifies Terraria's UIElement.Width<br/>Legacy UI: Does the same as modern but for <see cref="T:cModLoader.UI.LegacyUIContainer"/></summary>
+        </member>
+        <member name="P:cModLoader.UI.cUIElement.Height">
+            <summary> Modern UI: Modifies Terraria's UIElement.Height<br/>Legacy UI: Does the same as modern but for <see cref="T:cModLoader.UI.LegacyUIContainer"/></summary>
+        </member>
+        <member name="P:cModLoader.UI.cUIElement.Margin">
+            <summary> Modern UI: Modifies Terraria's UIElement.MaxWidth<br/>Legacy UI: Does the same as modern but for <see cref="T:cModLoader.UI.LegacyUIContainer"/><br/>
+            This can be used to create an offset when there is no parent object.<br/>Using <see cref="T:Microsoft.Xna.Framework.Vector4"/> as <c><see langword="new"/> <see cref="T:Microsoft.Xna.Framework.Vector4"/>(<paramref name="left"/>, <paramref name="right"/>, <paramref name="top"/>, <paramref name="bottom"/>)</c><para>This will not work in modern UI versions before 1.3.1. See <see cref="!:UIUtils.Using_Modern_UIUsingMargin"/></para></summary>
+        </member>
+        <member name="P:cModLoader.UI.cUIElement.MaxWidth">
+            <summary> Modern UI: Modifies Terraria's UIElement.MaxWidth<br/>Legacy UI: Does the same as modern but for <see cref="T:cModLoader.UI.LegacyUIContainer"/></summary>
+        </member>
+        <member name="P:cModLoader.UI.cUIElement.MaxHeight">
+            <summary> Modern UI: Modifies Terraria's UIElement.MaxHeight<br/>Legacy UI: Does the same as modern but for <see cref="T:cModLoader.UI.LegacyUIContainer"/></summary>
+        </member>
+        <member name="P:cModLoader.UI.cUIElement.MinWidth">
+            <summary> Modern UI: Modifies Terraria's UIElement.MinWidth<br/>Legacy UI: Does the same as modern but for <see cref="T:cModLoader.UI.LegacyUIContainer"/></summary>
+        </member>
+        <member name="P:cModLoader.UI.cUIElement.MinHeight">
+            <summary> Modern UI: Modifies Terraria's UIElement.MinHeight<br/>Legacy UI: Does the same as modern but for <see cref="T:cModLoader.UI.LegacyUIContainer"/></summary>
+        </member>
+        <member name="P:cModLoader.UI.cUIElement.Top">
+            <summary> Modern UI: Modifies Terraria's UIElement.Top<br/>Legacy UI: Does the same as modern but for <see cref="T:cModLoader.UI.LegacyUIContainer"/></summary>
+        </member>
+        <member name="P:cModLoader.UI.cUIElement.Left">
+            <summary> Modern UI: Modifies Terraria's UIElement.Left<br/>Legacy UI: Does the same as modern but for <see cref="T:cModLoader.UI.LegacyUIContainer"/></summary>
+        </member>
+        <member name="P:cModLoader.UI.cUIElement.Alignment">
+            <summary> Modern UI: Modifies Terraria's UIElement.HAlign and UIElement.VAlign<br/>Legacy UI: Does the same as modern but for <see cref="T:cModLoader.UI.LegacyUIContainer"/></summary>
+        </member>
+        <member name="P:cModLoader.UI.cUIElement.OverflowHidden">
+            <summary> Modern UI: Modifies Terraria's UIElement.OverflowHidden<br/>Legacy UI: Does the same as modern but for <see cref="T:cModLoader.UI.LegacyUIContainer"/></summary>
+        </member>
+        <member name="M:cModLoader.UI.cUIElement.GetInnerDimensions">
+            <summary> Gets the dimension not including margin or padding </summary>
+        </member>
+        <member name="M:cModLoader.UI.cUIElement.GetDimensions">
+            <summary> Gets the dimension including margin and padding (padding not implemented for legacy) </summary>
+        </member>
+        <member name="M:cModLoader.UI.cUIElement.Recalculate">
+            <summary> Recalculates the UI element. </summary>
+        </member>
+        <member name="M:cModLoader.UI.cUIElement.SetPadding(System.Single)">
+            <summary> Sets all side's padding to <paramref name="pixels"/>. </summary>
+        </member>
+        <member name="M:cModLoader.UI.cUIElement.GetChildren">
+            <summary> Gets the list of children, normally Terraria does not allow for this. </summary>
+        </member>
+        <member name="M:cModLoader.UI.cUIElement.ContainsPoint(Microsoft.Xna.Framework.Vector2)">
+            <summary> Does the element contain <paramref name="point"/>. </summary>
+        </member>
+        <member name="E:cModLoader.UI.cUIElement.OnClick">
+            <summary> Modern UI: Modifies Terraria's UIElement.OnLeftClick event (or UIElement.OnClick in versions before 1.4.4.8)<br/>Legacy UI: Does the same as modern but for <see cref="T:cModLoader.UI.LegacyUIContainer"/></summary>
+        </member>
+        <member name="E:cModLoader.UI.cUIElement.OnMouseOver">
+            <summary> Modern UI: Modifies Terraria's UIElement.OnMouseOver event<br/>Legacy UI: Does the same as modern but for <see cref="T:cModLoader.UI.LegacyUIContainer"/></summary>
+        </member>
+        <member name="E:cModLoader.UI.cUIElement.OnMouseOut">
+            <summary> Modern UI: Modifies Terraria's UIElement.OnMouseOver event<br/>Legacy UI: Does the same as modern but for <see cref="T:cModLoader.UI.LegacyUIContainer"/></summary>
+        </member>
+        <member name="M:cModLoader.UI.cUIElement.RemoveChild(cModLoader.UI.cUIElement)">
+            <summary> Removes a child. </summary>
+        </member>
+        <member name="M:cModLoader.UI.cUIElement.RemoveFromParent">
+            <summary> Removes this object from its parent. </summary>
+        </member>
+        <member name="M:cModLoader.UI.cUIElement.Append(cModLoader.UI.cUIElement)">
+            <summary> Appends a new child. </summary>
+        </member>
+        <member name="T:cModLoader.UI.cUIPanel">
+            <summary>cModLoader specific UI wrapper. This wraps Terraria's UIElement but simulates UIPanel for modern UI and <see cref="T:cModLoader.UI.LegacyUIContainer"/> for legacy UI. <br/>Not the same as Terraria's UITextPanel, this is specifically used for cModLoader as a wrapper </summary>
+        </member>
+        <member name="M:cModLoader.UI.cUIPanel.DrawPanel(cModLoader.UI.cUIElement,Microsoft.Xna.Framework.Graphics.SpriteBatch,Microsoft.Xna.Framework.Graphics.Texture2D,System.Nullable{Microsoft.Xna.Framework.Color})">
+            <summary> Draws a panel using <paramref name="texture"/>. This is copied from Terraria's UIPanel but changed slightly to work with its textures in any versions.<br/>Leave <paramref name="_color"/> <see langword="null"/> for <see cref="P:Microsoft.Xna.Framework.Color.White"/>.</summary>
+        </member>
+        <member name="T:cModLoader.UI.cUITextPanel`1">
+            <summary>cModLoader specific UI wrapper. This wraps Terraria's UITextPanel for modern UI and <see cref="T:cModLoader.UI.LegacyUIText"/> for legacy UI.<br/>T (<typeparamref name="T"/>) must be a <see cref="T:System.String"/> in all versions below 1.3.4 otherwise idk what happens. <br/>Not the same as Terraria's UITextPanel, this is specifically used for cModLoader as a wrapper </summary>
+        </member>
+        <member name="P:cModLoader.UI.cUITextPanel`1.Text">
+            <summary> Uses a lot of reflection in modern UIs, use sparingly. </summary>
+        </member>
+        <member name="P:cModLoader.UI.cUITextPanel`1.TextColour">
+            <summary> Sets the text colour of the given element. </summary>
+        </member>
+        <member name="T:cModLoader.UI.cUIState">
+            <summary>cModLoader specific UI wrapper. This wraps Terraria's UIState for modern UI and <see cref="T:cModLoader.UI.LegacyUIState"/> for legacy UI.</summary>
+        </member>
+        <member name="T:cModLoader.UI.cUIText">
+            <summary>cModLoader specific UI wrapper. This wraps Terraria's UIText for modern UI and <see cref="T:cModLoader.UI.LegacyUIText"/> for legacy UI.</summary>
+        </member>
+        <member name="P:cModLoader.UI.cUIText.Text">
+            <summary> Uses a lot of reflection in modern UIs, use sparingly. </summary>
+        </member>
+        <member name="P:cModLoader.UI.cUIText.TextColour">
+            <summary> Sets the text colour of the given element. </summary>
+        </member>
+        <member name="T:cModLoader.UI.cUIImageButton">
+            <summary>cModLoader specific UI wrapper. This wraps Terraria's UIImageButton for modern UI and <see cref="T:cModLoader.UI.LegacyUIText"/> for legacy UI.</summary>
+        </member>
+        <member name="T:cModLoader.UI.cUIList">
+            <summary>cModLoader specific UI wrapper. This wraps Terraria's UIPanel for modern UI and <see cref="T:cModLoader.UI.LegacyUIContainer"/> for legacy UI. <br/>Not the same as Terraria's UITextPanel, this is specifically used for cModLoader as a wrapper </summary>
+        </member>
+        <member name="F:cModLoader.UI.cUIList.WrapperListItems">
+            <summary>
+            The <see cref="T:cModLoader.UI.cUIList"/> wrapper children, this is not the native object's children, although you could obtain it through this.<br/>
+            If the native objects children are changed manually this will not update.
+            <para>
+            This is modified through <see cref="M:cModLoader.UI.cUIList.Add(cModLoader.UI.cUIElement)"/> and <see cref="M:cModLoader.UI.cUIList.Remove(cModLoader.UI.cUIElement)"/>
+            </para>
+            </summary>
+        </member>
+        <member name="P:cModLoader.UI.cUIList.ListPadding">
+            <summary> Modern UI: Modifies Terraria's UIElement.ListPadding<br/>Legacy UI: Does the same as modern but for <see cref="T:cModLoader.UI.LegacyUIContainer"/></summary>
+        </member>
+        <member name="M:cModLoader.UI.cUIList.Add(cModLoader.UI.cUIElement)">
+            <summary> Adds an element to the scroll list. This is different from <see cref="M:cModLoader.UI.cUIElement.Append(cModLoader.UI.cUIElement)"/> as it does not add it as a normal child.</summary>
+        </member>
+        <member name="M:cModLoader.UI.cUIList.Remove(cModLoader.UI.cUIElement)">
+            <summary> Removes an element to the scroll list. This is different from <see cref="M:cModLoader.UI.cUIElement.RemoveChild(cModLoader.UI.cUIElement)"/> as it does not remove it as a normal child.</summary>
+        </member>
+        <member name="T:cModLoader.UI.cUIScrollbar">
+            <summary>cModLoader specific UI wrapper. This wraps Terraria's cUIScrollbar for modern UI. This is not implemented and will create a placeholder <see cref="T:cModLoader.UI.LegacyUIContainer"/> for legacy UI.</summary>
+        </member>
+        <member name="T:cModLoader.UI.cUIColoredSlider">
+            <summary>cModLoader specific UI wrapper. This wraps Terraria's UIColoredSlider for modern UI above and including 1.4 and <see cref="T:cModLoader.UI.LegacyUIContainer"/> for legacy versions.<br/>Throws an error on version 1.3 to 1.3.5.3</summary>
+        </member>
+        <member name="F:cModLoader.UI.cUIColoredSlider.IsLegacyModernSlider">
+            <summary> Is the slider using legacy sliders for the modern UI. This is <see langword="true"/> occurs in some 1.3 versions. (See <see cref="P:cModLoader.Terraria.VersionChecks.Using_Modern_UISliders"/>)</summary>
+        </member>
+        <member name="P:cModLoader.UI.cUIColoredSlider.Value">
+            <summary> Gets or sets the slider value.</summary>
+        </member>
+        <member name="F:cModLoader.UI.cUIColoredSlider.OnValueChange">
+            <summary> Called when the value changes. </summary>
+        </member>
+        <member name="F:cModLoader.UI.cUIColoredSlider.SliderColour">
+            <summary> Returns the colour of the point percentage on the slider. By default this just lerps between <see cref="F:cModLoader.UI.cUIColoredSlider.startColour"/> and <see cref="F:cModLoader.UI.cUIColoredSlider.endColour"/><br/>Not used for legacy UI.</summary>
+        </member>
+        <member name="M:cModLoader.UI.cUIColoredSlider.#ctor(Microsoft.Xna.Framework.Color,Microsoft.Xna.Framework.Color,System.Single)">
+            <summary> <paramref name="startColour"/> and <paramref name="endColour"/> are ignored for legacy UI.</summary>
+        </member>
+        <member name="M:cModLoader.UI.cUIColoredSlider.GetSliderValue">
+            <summary> Gets the slider value, this is internal used for Terraria slider class. </summary>
+        </member>
+        <member name="M:cModLoader.UI.cUIColoredSlider.SetSliderValue(System.Single)">
+            <summary> Sets the slider value, this is internal used for Terraria slider class. </summary>
+        </member>
+        <member name="T:cModLoader.UI.UIUtils">
+            <summary> Utils for UI related stuff. If you are modding older versions make sure you use its respective system for UI </summary>
+        </member>
+        <member name="F:cModLoader.UI.UIUtils.Test_DrawBoundsLegacyUI">
+            <summary> Draws bounds of elements using legacy UI, this can be used to testing or whatever. This only works on <see cref="T:cModLoader.UI.LegacyUIContainer"/> and overriding classes. </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.DrawString(Microsoft.Xna.Framework.Graphics.SpriteBatch,System.String,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Color,System.Single,System.Boolean)">
+            <summary> Calls <see cref="M:cModLoader.UI.UIUtils.DrawString(Microsoft.Xna.Framework.Graphics.SpriteBatch,System.String,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Color,System.Single,Microsoft.Xna.Framework.Vector2,System.Boolean)"/> </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.DrawString(Microsoft.Xna.Framework.Graphics.SpriteBatch,System.String,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Color,System.Single,Microsoft.Xna.Framework.Vector2,System.Boolean)">
+            <summary> Draws a string using Terraria's string drawing method.<br/>This will NOT check if the font system is initialized, use <see cref="M:cModLoader.UI.UIUtils.DrawSafeString(cModLoader.Utils.GameReference,System.String,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Color,System.Single,Microsoft.Xna.Framework.Vector2)"/> for that. </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.DrawSafeString(cModLoader.Utils.GameReference,System.String,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Color,System.Single,Microsoft.Xna.Framework.Vector2)">
+            <summary> Safely draws a string by loading the fonts instead of relying on Terraria, draws like normal in versions using the legacy font system and draws using the ReLogic.dll with the modern font system.<br/>Used to draw before fonts are loaded.</summary>
+        </member>
+        <member name="T:cModLoader.UI.UIUtils.LegacyFontSystem">
+            <summary> Used for version using legacy font system.</summary>
+        </member>
+        <member name="T:cModLoader.UI.UIUtils.ModernFontSystem">
+            <summary> Used for version using modern font system.</summary>
+        </member>
+        <member name="T:cModLoader.UI.UIUtils.ModernReferences">
+            <summary> Used to reference modern UI, for versions 1.3 and up. See <see cref="!:Using_LegacyUISystem"/> </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.InstanceCreator.CreateUIElementWithOverrides(System.Type)">
+            <summary>
+            <para>
+            <see langword="⚠ Only works on public classes"/>
+            </para>
+            Returns an instance of the type you provided but with a field called "DrawSelfCallback" which is called by the original DrawSelf function, use <see cref="!:cUIElement.DrawSelf"/> to set this.<br/>
+            <paramref name="baseType"/> must inherit Terraria's UIElement.<br/>
+            This is used for <see cref="T:cModLoader.UI.ModListItem"/> to draw stuff.
+            <para>
+            Types are cached so calling this multiple times on the same type will return the same type (as a new instance).<br/>
+            Technically DrawSelf will call <see cref="!:cUIElement.DrawSelf_Intermediate(object, SpriteBatch)"/> which will then call "DrawSelfCallback" (or whatever <see cref="!:cUIElement.DrawSelf"/> is).
+            </para>
+            </summary>
+        </member>
+        <member name="F:cModLoader.UI.UIUtils.ModernReferences.UIElement_Reference.Type_Cache">
+            <summary> Cache type. </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.UIElement_Reference.GetNativeName">
+            <summary> Gets the native Terraria type name. </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.UIElement_Reference.GetNativeType">
+            <summary> Gets the native Terraria type. </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.UIElement_Reference.New">
+            <summary> Create a new instance of the native Terraria type. </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.UIElement_Reference.AddMouseEvent(cModLoader.UI.cUIElement,System.String,System.Reflection.MethodInfo)">
+            <summary> Adds a given function to an event, returns <see langword="false"/> if failed or <see langword="true"/> if success</summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.UIElement_Reference.RemoveMouseEvent(cModLoader.UI.cUIElement,System.String,System.Reflection.MethodInfo)">
+            <summary> Removes a given function to an event, returns <see langword="false"/> if failed or <see langword="true"/> if success</summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.UIElement_Reference.AddMouseEvent(cModLoader.UI.cUIElement,System.String,System.Delegate)">
+            <summary> Adds a given event to an event, returns <see langword="false"/> if failed or <see langword="true"/> if success</summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.UIElement_Reference.RemoveMouseEvent(cModLoader.UI.cUIElement,System.String,System.Delegate)">
+            <summary> Removes a given event to an event, returns <see langword="false"/> if failed or <see langword="true"/> if success</summary>
+        </member>
+        <member name="F:cModLoader.UI.UIUtils.ModernReferences.UIPanel_Reference.Type_Cache">
+            <summary> Cache type. </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.UIPanel_Reference.GetNativeName">
+            <summary> Gets the native Terraria type name. </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.UIPanel_Reference.GetNativeType">
+            <summary> Gets the native Terraria type. </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.UIPanel_Reference.New">
+            <summary> Create a new instance of the native Terraria type. </summary>
+        </member>
+        <member name="F:cModLoader.UI.UIUtils.ModernReferences.UIText_Reference.Type_Cache">
+            <summary> Cache type. </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.UIText_Reference.GetNativeName">
+            <summary> Gets the native Terraria type name. </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.UIText_Reference.GetNativeType">
+            <summary> Gets the native Terraria type. </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.UIText_Reference.New(System.String,System.Single,System.Boolean)">
+            <summary> Create a new instance of the native Terraria type. </summary>
+        </member>
+        <member name="F:cModLoader.UI.UIUtils.ModernReferences.UserInterface_Reference.Type_Cache">
+            <summary> Cache type. </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.UserInterface_Reference.GetNativeName">
+            <summary> Gets the native Terraria type name. </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.UserInterface_Reference.GetNativeType">
+            <summary> Gets the native Terraria type. </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.UserInterface_Reference.New">
+            <summary> Create a new instance of the native Terraria type. </summary>
+        </member>
+        <member name="F:cModLoader.UI.UIUtils.ModernReferences.UIState_Reference.Type_Cache">
+            <summary> Cache type. </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.UIState_Reference.GetNativeName">
+            <summary> Gets the native Terraria type name. </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.UIState_Reference.GetNativeType">
+            <summary> Gets the native Terraria type. </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.UIState_Reference.New">
+            <summary> Create a new instance of the native Terraria type. </summary>
+        </member>
+        <member name="F:cModLoader.UI.UIUtils.ModernReferences.UITextPanel_Reference.Type_Cache">
+            <summary> Cache type. </summary>
+        </member>
+        <member name="P:cModLoader.UI.UIUtils.ModernReferences.UITextPanel_Reference.IsGeneric">
+            <summary> Gets weather or not the native Terraria type is using generic. </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.UITextPanel_Reference.GetNativeName(System.Boolean)">
+            <summary> Gets the native Terraria type name. </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.UITextPanel_Reference.GetNativeType">
+            <summary> Gets the native Terraria type. </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.UITextPanel_Reference.New``1(``0,System.Single,System.Boolean)">
+            <summary> Creates a new instance of UITextPanel.<para>T (<typeparamref name="T"/>) must be a <see cref="T:System.String"/> in versions not using <see cref="!:Using_Modern_UITextPanelUsingGeneric"/> (before 1.3.4) </para></summary>
+        </member>
+        <member name="F:cModLoader.UI.UIUtils.ModernReferences.UIList_Reference.Type_Cache">
+            <summary> Cache type. </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.UIList_Reference.GetNativeName">
+            <summary> Gets the native Terraria type name. </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.UIList_Reference.GetNativeType">
+            <summary> Gets the native Terraria type. </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.UIList_Reference.New">
+            <summary> Create a new instance of the native Terraria type. </summary>
+        </member>
+        <member name="F:cModLoader.UI.UIUtils.ModernReferences.UIScrollbar_Reference.Type_Cache">
+            <summary> Cache type. </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.UIScrollbar_Reference.GetNativeName">
+            <summary> Gets the native Terraria type name. </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.UIScrollbar_Reference.GetNativeType">
+            <summary> Gets the native Terraria type. </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.UIScrollbar_Reference.New">
+            <summary> Create a new instance of the native Terraria type. </summary>
+        </member>
+        <member name="F:cModLoader.UI.UIUtils.ModernReferences.UIImageButton_Reference.Type_Cache">
+            <summary> Cache type. </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.UIImageButton_Reference.GetNativeName">
+            <summary> Gets the native Terraria type name. </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.UIImageButton_Reference.GetNativeType">
+            <summary> Gets the native Terraria type. </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.UIImageButton_Reference.New(cModLoader.Utils.ReLogicAsset{Microsoft.Xna.Framework.Graphics.Texture2D})">
+            <summary> Create a new instance of the native Terraria type.</summary>
+        </member>
+        <member name="F:cModLoader.UI.UIUtils.ModernReferences.UIColoredSlider_Reference.Type_Cache">
+            <summary> Cache type. </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.UIColoredSlider_Reference.GetNativeName">
+            <summary> Gets the native Terraria type name. </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.UIColoredSlider_Reference.GetNativeType">
+            <summary> Gets the native Terraria type. </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.UIColoredSlider_Reference.New(System.Func{System.Single},System.Action{System.Single},System.Action,System.Func{System.Single,Microsoft.Xna.Framework.Color})">
+            <summary> Create a new instance of the native Terraria type. </summary>
+        </member>
+        <member name="T:cModLoader.UI.UIUtils.ModernReferences.StyleDimension_Reference">
+            <summary> Developer note: we can not put instance functions in here that modify values because the getters and setters in <see cref="T:cModLoader.UI.cUIElement"/> wont work.</summary>
+        </member>
+        <member name="F:cModLoader.UI.UIUtils.ModernReferences.StyleDimension_Reference.Type_Cache">
+            <summary> Cache type. </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.StyleDimension_Reference.GetNativeName">
+            <summary> Gets the native Terraria type name. </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.StyleDimension_Reference.GetNativeType">
+            <summary> Gets the native Terraria type. </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.StyleDimension_Reference.New(cModLoader.UI.UIUtils.ModernReferences.StyleDimension_Reference)">
+            <summary> Create a new instance of the native Terraria type. </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.StyleDimension_Reference.New(cModLoader.UI.Positioning)">
+            <summary> Create a new instance of the native Terraria type. </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.StyleDimension_Reference.New(System.Single,System.Single)">
+            <summary> Create a new instance of the native Terraria type. </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.DefaultButtonMouseEnter(System.Object)">
+            <summary> Plays a sound and changed the colours of a given UIElement (<paramref name="native"/> is the native element, not the cModLoader wrappers). </summary>
+        </member>
+        <member name="M:cModLoader.UI.UIUtils.ModernReferences.DefaultButtonMouseExit(System.Object)">
+            <summary> Changed the colours of a given UIElement </summary>
+        </member>
+        <member name="T:cModLoader.Patching.DefaultPatches">
+            <summary> Patch class used for base/default patches mostly required to make every versions work seamlessly </summary>
+        </member>
+        <member name="T:cModLoader.Patching.GlobalHooks">
+            <summary>
+            Class storing events for common Terraria functions.<br/>
+            The events in this class are NOT guaranteed to be invoked if patches are disabled, many of the functions can be found elsewhere (still requiring patches) like in <see cref="T:cModLoader.ModComponents.Mod"/>.
+            <para>See <see cref="T:cModLoader.Patching.GlobalHooks.RawHooks"/> for hooks that do not require patches.</para>
+            </summary>
+        </member>
+        <member name="T:cModLoader.Patching.GlobalHooks.RawHooks">
+            <summary>
+            These raw hooks do not require patches and work in any version of windows and works on Linux versions 1.4.1 and up.<br/>
+            </summary>
+        </member>
+        <member name="E:cModLoader.Patching.GlobalHooks.RawHooks.OnPreTick">
+            <summary>
+            Called before both Main.Update and Main.Draw are called every frame.
+            <para>
+            <paramref name="Windows"/>: Called right before <see cref="T:Microsoft.Xna.Framework.Game"/>.HostIdle() (right before <see cref="T:Microsoft.Xna.Framework.Game"/>.Tick()) from inside Game.host.Idle<br/>This is also not called on the first frame of the game, but rather after it.<br/>
+            Note: this runs way faster then Terraria, it is not tied to Terraria's framerate.
+            </para>
+            <para>
+            <paramref name="Linux"/>: Only works in Linux versions 1.4.1 and up.<br/>Called right before <see cref="T:Microsoft.Xna.Framework.Game"/>.Tick() (or in <see cref="T:Microsoft.Xna.Framework.Game"/>.Tick() but before Main.Update and Main.Draw) <br/>
+            </para>
+            </summary>
+        </member>
+        <member name="E:cModLoader.Patching.GlobalHooks.RawHooks.OnPostTick">
+            <summary>
+            Called after both Main.Update and Main.Draw are called every frame. Main.Draw may not have been called.
+            <para>
+            <paramref name="Windows"/>: Called right after <see cref="T:Microsoft.Xna.Framework.Game"/>.HostIdle() (right after <see cref="T:Microsoft.Xna.Framework.Game"/>.Tick()) from inside Game.host.Idle
+            </para>
+            <para>
+            <paramref name="Linux"/>: Called NEVER, FINED A PLACE TO CALL THIS. <br/>
+            </para>
+            </summary>
+        </member>
+        <member name="E:cModLoader.Patching.GlobalHooks.RawHooks.OnRawPreDraw">
+            <summary>
+            Called before everything else has been draw, this is directly before <see cref="M:Microsoft.Xna.Framework.IGraphicsDeviceManager.BeginDraw"/> called inside <see cref="M:Microsoft.Xna.Framework.Game.BeginDraw"/>
+            <para>
+            <paramref name="Linux"/>: Only works in Linux versions 1.4.1 and up.
+            </para>
+            </summary>
+        </member>
+        <member name="E:cModLoader.Patching.GlobalHooks.RawHooks.OnRawPostDraw">
+            <summary>
+            Called after everything else has been draw, this is directly after <see cref="M:Microsoft.Xna.Framework.IGraphicsDeviceManager.EndDraw"/> called inside <see cref="M:Microsoft.Xna.Framework.Game.EndDraw"/>
+            <para>
+            <paramref name="Linux"/>: Only works in Linux versions 1.4.1 and up.
+            </para>
+            </summary>
+        </member>
+        <member name="E:cModLoader.Patching.GlobalHooks.RawHooks.OnConsoleOutput">
+            <summary> 
+            Called when <see cref="M:System.Console.WriteLine"/> is called<br/>Do NOT call anything that will write to console here or it will create an infinite loop.<br/>
+            This may not work, Linux takes back the console so it likely only works on windows but depending on how its run it might not work at all.
+            </summary>
+        </member>
+        <member name="E:cModLoader.Patching.GlobalHooks.RawHooks.OnPreMouseInterface">
+            <summary>
+            Called right before the mouse is drawn when not "in game" (not in a world) . Only works in versions after and including 1.3.3
+            </summary>
+        </member>
+        <member name="E:cModLoader.Patching.GlobalHooks.RawHooks.OnOptionsInterface">
+            <summary>
+            Called right after the mouse "in game" (in a world) options are draw. Only works in versions after and including 1.3.3
+            </summary>
+        </member>
+        <member name="M:cModLoader.Patching.GlobalHooks.RawHooks.PreTick(cModLoader.Utils.GameReference)">
+            <summary> Before <see cref="T:Microsoft.Xna.Framework.Game"/>.HostIdle() (<see cref="T:Microsoft.Xna.Framework.Game"/>.Tick()) </summary>
+        </member>
+        <member name="M:cModLoader.Patching.GlobalHooks.RawHooks.PostTick(cModLoader.Utils.GameReference)">
+            <summary> After <see cref="T:Microsoft.Xna.Framework.Game"/>.HostIdle() (<see cref="T:Microsoft.Xna.Framework.Game"/>.Tick()) </summary>
+        </member>
+        <member name="M:cModLoader.Patching.GlobalHooks.RawHooks.RawPreDraw(cModLoader.Utils.GameReference)">
+            <summary> Before <see cref="M:Microsoft.Xna.Framework.Game.BeginDraw"/> </summary>
+        </member>
+        <member name="M:cModLoader.Patching.GlobalHooks.RawHooks.RawPostDraw(cModLoader.Utils.GameReference)">
+            <summary> After <see cref="M:Microsoft.Xna.Framework.Game.EndDraw"/> </summary>
+        </member>
+        <member name="M:cModLoader.Patching.GlobalHooks.RawHooks.ConsoleOutput(System.String)">
+            <summary> Called when <see cref="M:System.Console.WriteLine"/> </summary>
+        </member>
+        <member name="M:cModLoader.Patching.GlobalHooks.RawHooks.UnsafeHooks.HookUIElementDrawCall(cModLoader.Utils.GameReference)">
+            <summary>
+            <para> Don't use this because its not useful, it can't not do what i wanted. </para>
+            This only works on modern UI on windows (because it only supports 32 bit) and is "<see langword="unsafe"/>".<br/>
+            This will hook (replaced the pointer of) an <see langword="unsafe"/> (native unmanaged) function within the "<see langword="get"/>" method of <see cref="P:Microsoft.Xna.Framework.Graphics.GraphicsDevice.ScissorRectangle"/>.<br/>
+            This modifies the pointer with offset 304 of <see cref="T:IDirect3DDevice9"/>.
+            <para>Returns if the hook was successful.</para>
+            </summary>
+        </member>
+        <member name="T:cModLoader.Patching.PatchUtils">
+            <summary> Some utils to help do stuff regarding patching </summary>
+        </member>
+        <member name="T:cModLoader.Patching.cModPatch">
+            <summary>
+            A custom patcher class used to patch, as MonoMod/Harmony seems to incorrectly create IL code causing crashes, i think see (<see href="https://github.com/pardeike/Harmony/issues/640"/>) for a related topic.<br/>
+            </summary>
+        </member>
+        <member name="T:cModLoader.Patching.cModPatch.Patch">
+            <summary>
+            Used to store information about a patch, nothing in this class should be modified by the mod as its fields are used for referencing, changing fields could result in a crash.
+            </summary>
+        </member>
+        <member name="P:cModLoader.Patching.cModPatch.Patch.ilModifications">
+            <summary> Array of user defined IL modifications. Changing this in any way will do nothing, as its just for referencing by the mod. </summary>
+        </member>
+        <member name="P:cModLoader.Patching.cModPatch.Patch.Patched">
+            <summary> Was the patch successful </summary>
+        </member>
+        <member name="P:cModLoader.Patching.cModPatch.Patch.ClassName">
+            <summary> The class the patch belongs to </summary>
+        </member>
+        <member name="P:cModLoader.Patching.cModPatch.Patch.FunctionName">
+            <summary> The name of the new function </summary>
+        </member>
+        <member name="P:cModLoader.Patching.cModPatch.Patch.ReturnType">
+            <summary> The patch return type </summary>
+        </member>
+        <member name="P:cModLoader.Patching.cModPatch.Patch.ParameterCount">
+            <summary> The patch return type </summary>
+        </member>
+        <member name="P:cModLoader.Patching.cModPatch.Patch.ParameterTypes">
+            <summary> The patch return type </summary>
+        </member>
+        <member name="P:cModLoader.Patching.cModPatch.Patch.wrapperFunction">
+            <summary> The new function you created for this patch </summary>
+        </member>
+        <member name="P:cModLoader.Patching.cModPatch.Patch.originalFunctionName">
+            <summary> The name of the function originally being patched </summary>
+        </member>
+        <member name="P:cModLoader.Patching.cModPatch.Patch.originalFunction">
+            <summary> The function that was patched </summary>
+        </member>
+        <member name="P:cModLoader.Patching.cModPatch.Patch.PatchOrigin">
+            <summary> The code name identifier for the patch's origin function </summary>
+        </member>
+        <member name="P:cModLoader.Patching.cModPatch.Patch.PatchFullName">
+            <summary> The code name identifier for the patch </summary>
+        </member>
+        <member name="T:cModLoader.Patching.cModPatch.ILModification">
+            <summary>  </summary>
+        </member>
+        <member name="M:cModLoader.Patching.cModPatch.AddPatch(System.String,System.String,System.String,System.String[],System.Reflection.MethodInfo)">
+            <summary>
+            <para> This function is used to create a custom patch that allows you to modify default behavior of a Terraria function. (Will not do anything if patches are disabled) </para>
+            <para> These patches only works on the Terraria assembly when it is loaded and can not be undone. </para>
+            <para> I will use <c><see langword="public"/> <see langword="double"/> <see cref="T:cModLoader.Terraria"/>.<see cref="!:Player.Hurt"/></c> as an example as this function can not be patched using Harmony </para>
+            <para> <b><paramref name="Class"/></b>: The class name that the function resides in. <u><b><i>eg.</i></b> This has to be the full name, instead of <c>"Player"</c> it would be <c>"Terraria.Player"</c>.</u> </para> 
+            <para> <b><paramref name="FunctionName"/></b>: The name of function. <u><b><i>eg.</i></b> <c>"Hurt"</c>.</u> </para> 
+            <para> <b><paramref name="ReturnType"/></b>: The return type of the function. <u><b><i>eg.</i></b> This has to be the full name, instead of <c>"double"</c> it would be <c>"System.Double"</c>.</u> </para> 
+            <para> <b><paramref name="ParameterTypes"/></b>: The types of the function's parameters. <u><b><i>eg.</i></b> This has to be the full name, instead of <c>"double"</c> it would be <c>"System.Double"</c>.</u> </para> 
+            <para> <b><paramref name="NewFunction"/></b>: The new function that will be ran instead, this needs reflection. <u><b><i>eg.</i></b>  <c>typeof(YourClass).GetMethod("HurtPatchExample")</c>.</u></para>
+            <para>
+            The patch function requires the same return type and parameters as the function you want to patch, plus an instance of the class if its not static as the first parameter.<br/>
+            The patch function can NOT contain any reference to the terraria assembly in the parameters, for example <see cref="!:Player"/> or <see cref="!:PlayerDeathReason"/> would have to be changed to <see cref="T:System.Object"/>.</para>
+            <para> Example:<br/> <c><see langword="double"/> <see cref="M:cModLoader.Patching.cModPatch.HurtPatchExampleForNonStatic(System.Object,System.Object,System.Int32,System.Int32,System.Boolean,System.Boolean,System.Boolean,System.Int32,System.Boolean)"/></c> for a non static function or <c><see langword="double"/> <see cref="M:cModLoader.Patching.cModPatch.HurtPatchExampleForStatic(System.Object,System.Int32,System.Int32,System.Boolean,System.Boolean,System.Boolean,System.Int32,System.Boolean)"/></c> for a static function </para> 
+            <para> This overrides the original function and create a new functions with the original data, the original function can be called using <c><see cref="P:cModLoader.Patching.cModPatch.Patch.originalFunction"/></c> </para> 
+            </summary>
+            <returns> A <c><see cref="T:cModLoader.Patching.cModPatch.Patch"/></c> instance contain details about the patch, nothing can be modified but <c><see cref="P:cModLoader.Patching.cModPatch.Patch.originalFunction"/></c> can be used to obtain or call the original function. </returns>
+        </member>
+        <member name="M:cModLoader.Patching.cModPatch.AddPatch(System.String,System.String,System.String,System.String[],System.Reflection.MethodInfo,cModLoader.Patching.cModPatch.ILModification)">
+            <summary>
+            See <see cref="M:cModLoader.Patching.cModPatch.AddPatch(System.String,System.String,System.String,System.String[],System.Reflection.MethodInfo)"/> for more information.
+            <para> This is used to modify the IL code of the original function. This also creates a patch but changes the original function's code. </para>
+            <para> Only use this if you know what your doing, no checks are done to make sure your modifications are valid. </para>
+            </summary>
+        </member>
+        <member name="M:cModLoader.Patching.cModPatch.ForcePatch(System.String,System.String,System.String,System.String[],System.Reflection.MethodInfo,cModLoader.Patching.cModPatch.ILModification)">
+            <summary> Internal because this overrides the disabled patch option. </summary>
+        </member>
+        <member name="M:cModLoader.Patching.cModPatch.HurtPatchExampleForNonStatic(System.Object,System.Object,System.Int32,System.Int32,System.Boolean,System.Boolean,System.Boolean,System.Int32,System.Boolean)">
+            <summary> Never called, just used for patch example </summary>
+        </member>
+        <member name="M:cModLoader.Patching.cModPatch.HurtPatchExampleForStatic(System.Object,System.Int32,System.Int32,System.Boolean,System.Boolean,System.Boolean,System.Int32,System.Boolean)">
+            <summary> Never called, just used for patch example </summary>
+        </member>
+        <member name="T:cModLoader.Patching.LegacyVersionPatch">
+            <summary> Patch class used to patch versions 0.7 to 1.0.6.1 </summary>
+        </member>
+        <member name="T:cModLoader.Patching.VeryLegacyVersionPatch">
+            <summary> Patch class used to patch versions 0.1 (not actually using patches since we don't need to) </summary>
+        </member>
+        <member name="T:cModLoader.FNA.FNA_SDL3">
+            <summary>
+            This was taken from the FNA.dll. its license i think allows me to just copy there code to interact with SDL.
+            <para>Actual Source: <see href="https://github.com/flibitijibibo/SDL3-CS/blob/main/SDL3/SDL3.Core.cs"/></para>
+            </summary>
+        </member>
+        <member name="T:cModLoader.FNA.FNA_SDL2">
+            <summary>
+            This was taken from the FNA.dll. its license i think allows me to just copy there code to interact with SDL.
+            <para>Actual Source: <see href="https://github.com/flibitijibibo/SDL2-CS/blob/master/src/SDL2.cs"/></para>
+            </summary>
+        </member>
+        <member name="T:cModLoader.Terraria">
+            <summary> </summary>
+        </member>
+        <member name="T:cModLoader.Terraria._Version">
+            <summary> Class for referencing specific game versions </summary>
+        </member>
+        <member name="F:cModLoader.Terraria._Version.Numbers">
+            <summary> Number representation of the version. Eg. [ 1, 4, 4, 9 ] </summary>
+        </member>
+        <member name="F:cModLoader.Terraria._Version.Name">
+            <summary> String representation of the version. Eg. "1.4.4.9" </summary>
+        </member>
+        <member name="M:cModLoader.Terraria._Version.#ctor(System.Int32[])">
+            <summary> </summary>
+        </member>
+        <member name="T:cModLoader.Terraria.VersionType">
+            <summary> Used to identify versions groups. </summary>
+        </member>
+        <member name="F:cModLoader.Terraria.VersionType.Future">
+            <summary> 1.5 - ??? </summary>
+        </member>
+        <member name="F:cModLoader.Terraria.VersionType.Current">
+            <summary> 1.4 - current </summary>
+        </member>
+        <member name="F:cModLoader.Terraria.VersionType.Modern">
+            <summary> 1.3.0.7 - 1.3.5.3 </summary>
+        </member>
+        <member name="F:cModLoader.Terraria.VersionType.OldModern">
+            <summary> 1.3 - 1.3.0.6 </summary>
+        </member>
+        <member name="F:cModLoader.Terraria.VersionType.Old">
+            <summary> 1.2 - 1.2.4.1 </summary>
+        </member>
+        <member name="F:cModLoader.Terraria.VersionType.Legacy">
+            <summary> 0.7 - 1.0.6.1 </summary>
+        </member>
+        <member name="F:cModLoader.Terraria.VersionType.VeryLegacy">
+            <summary> 0.1 </summary>
+        </member>
+        <member name="F:cModLoader.Terraria.VersionType.Unknown">
+            <summary> Unknown </summary>
+        </member>
+        <member name="P:cModLoader.Terraria.IsLinux">
+            <summary>
+            Is Terraria the 'native' Linux builds. Versions where this is <see langword="true"/> have a <c>Terraria.LinuxLaunch</c> class.<br/>
+            </summary>
+        </member>
+        <member name="P:cModLoader.Terraria.IsFNALoaded">
+            <summary>
+            Is Terraria using FNA, this is only <see langword="true"/> if running on Linux, but may be <see langword="false"/> depending on Proton version.<br/>
+            This is <see langword="false"/> until FNA loads. This means it could be <see langword="false"/> because FNA was not loaded yet.
+            <para>
+            This may be <see langword="true"/> while using Xna because of Wine/Proton.
+            </para>
+            </summary>
+        </member>
+        <member name="P:cModLoader.Terraria.IsXnaLoaded">
+            <summary>
+            Is Terraria using Xna, this is only <see langword="true"/> if running on windows or some Proton versions<br/>
+            This is <see langword="false"/> until Xna loads. This means it could be <see langword="false"/> because FNA was not loaded yet.
+            <para>
+            This could give a <see langword="false-positive"/> if FNA is version 4.0.0.0 but i don't think any Terraria versions use that.
+            </para>
+            </summary>
+        </member>
+        <member name="M:cModLoader.Terraria.GetType(System.String)">
+            <summary> Calls <see cref="M:System.Reflection.Assembly.GetType(System.String)"/> on <see cref="F:cModLoader.Terraria.TerrariaAsm"/>. Returns <see langword="null"/> if no type is found.<br/>Expands to <c>TerrariaAsm.GetType(type)</c></summary>
+        </member>
+        <member name="T:cModLoader.Terraria.VersionChecks">
+            <summary> Stuff for checking versions compatibility, full of a bunch of random things checks.<para>These were only checked on windows.</para></summary>
+        </member>
+        <member name="P:cModLoader.Terraria.VersionChecks.Is0_1">
+            <summary> Is Terraria version 0.1 (aka Alpha). </summary>
+        </member>
+        <member name="P:cModLoader.Terraria.VersionChecks._1_1AndUp">
+            <summary> Is Terraria version 1.1 and up. </summary>
+        </member>
+        <member name="P:cModLoader.Terraria.VersionChecks._1_2_3AndUp">
+            <summary> Is Terraria version 1.2.3 and up. </summary>
+        </member>
+        <member name="P:cModLoader.Terraria.VersionChecks._1_3AndUp">
+            <summary> Is Terraria version 1.3 and up. </summary>
+        </member>
+        <member name="P:cModLoader.Terraria.VersionChecks._1_3_1AndUp">
+            <summary> Is Terraria version 1.3.1 and up. </summary>
+        </member>
+        <member name="P:cModLoader.Terraria.VersionChecks._1_3_3AndUp">
+            <summary> Is Terraria version 1.3.3 and up. </summary>
+        </member>
+        <member name="P:cModLoader.Terraria.VersionChecks._1_3_5AndUp">
+            <summary> Is Terraria version 1.3.5 and up. </summary>
+        </member>
+        <member name="P:cModLoader.Terraria.VersionChecks._1_4AndUp">
+            <summary> Is Terraria version 1.4 and up. </summary>
+        </member>
+        <member name="P:cModLoader.Terraria.VersionChecks._1_4_5AndUp">
+            <summary> Is Terraria version 1.4.5 and up. </summary>
+        </member>
+        <member name="P:cModLoader.Terraria.VersionChecks._1_4_4_8AndUp">
+            <summary> Is Terraria version 1.4.4.8 and up. </summary>
+        </member>
+        <member name="P:cModLoader.Terraria.VersionChecks.Using_Modern_UITextPanelUsingGeneric">
+            <summary> 
+            Is Terraria's UITextPanel class using a generic type (only applies to the modern UI).<br/>
+            This is <see langword="true"/> for versions after and including 1.3.4.
+            <para>Older modern UI versions effectively use a string instead.</para>
+            </summary>
+        </member>
+        <member name="P:cModLoader.Terraria.VersionChecks.Using_Modern_UIUsingMargin">
+            <summary> 
+            Is Terraria using margins in the UI system (only applies to the modern UI).<br/>
+            This is <see langword="true"/> for versions after and including 1.3.1.
+            <para>Older modern UI versions do not have an option for margins.</para>
+            </summary>
+        </member>
+        <member name="P:cModLoader.Terraria.VersionChecks.Using_LegacyUISystem">
+            <summary> 
+            Is Terraria using the legacy UI system.<br/>
+            This is <see langword="true"/> for versions 0.1 to 1.2.4.1 (inclusive).
+            <para>This also determines if Main.instance exists, in versions where this is <see langword="false"/>, Main.instance exists, otherwise you can use <see cref="M:cModLoader.Terraria.Utils.GetMain"/></para>
+            <para>Newer versions implement a different system.</para>
+            </summary>
+        </member>
+        <member name="P:cModLoader.Terraria.VersionChecks.Using_LegacyFontSystem">
+            <summary> 
+            Is Terraria using the legacy font system.<br/>
+            This is <see langword="true"/> for versions 0.1 to 1.3.4.4 (inclusive).
+            <para>Newer versions implement a different system.</para>
+            </summary>
+        </member>
+        <member name="P:cModLoader.Terraria.VersionChecks.Using_UtilsTextDrawing">
+            <summary> 
+            Is Terraria using "Terraria.Utils" to draw text.<br/>
+            This is <see langword="true"/> for versions after and including 1.2.3.
+            <para>Older versions implement a different system.</para>
+            </summary>
+        </member>
+        <member name="P:cModLoader.Terraria.VersionChecks.Using_RelogicAssets">
+            <summary> 
+            Is Terraria using the Asset type from the Relogic.dll.<br/>
+            This is <see langword="true"/> for versions after and including 1.4.
+            <para>Older versions implement a different system.</para>
+            </summary>
+        </member>
+        <member name="P:cModLoader.Terraria.VersionChecks.Using_Modern_UIScrollbarUsesEnum">
+            <summary> 
+            Is Terraria's UIScrollbar using an enum in its constructor's parameters.<br/>
+            This is <see langword="true"/> for versions after and including 1.4.5
+            <para>Older versions have nothing in its contractors parameters.</para>
+            </summary>
+        </member>
+        <member name="P:cModLoader.Terraria.VersionChecks.Using_Modern_RichUIDirectory">
+            <summary> 
+            Is Terraria using more sub-folders to better organize stuff in the UI folder.<br/>
+            This is <see langword="true"/> for versions after and including 1.4.
+            <para>Older versions do not have folder such as <c>Content\Images\UI\Bestiary</c> or <c>Content\Images\UI\CharCreation</c>.</para>
+            </summary>
+        </member>
+        <member name="P:cModLoader.Terraria.VersionChecks.Using_Modern_UITextColour">
+            <summary> 
+            Is Terraria using _color for text colouring. This applies to UITextPanel and UIText.<br/>
+            This is <see langword="true"/> for versions after and including 1.3.1.<br/>
+            Note that this only applies to modern UI version, legacy versions can always colour text.
+            <para>Older modern UI versions only draw in white.</para>
+            </summary>
+        </member>
+        <member name="P:cModLoader.Terraria.VersionChecks.Using_Modern_UIImageButtonRectParams">
+            <summary> 
+            Does Terraria's UIImageButton class have "<see cref="T:Microsoft.Xna.Framework.Rectangle"/>?" as a second parameter.<br/>
+            This is <see langword="true"/> for versions after and including 1.4.5.
+            <para>Older modern UI versions do not use this.</para>
+            </summary>
+        </member>
+        <member name="P:cModLoader.Terraria.VersionChecks.Using_Modern_LinuxUsingSDL2">
+            <summary> 
+            Is Terraria's (on Linux) Using SDL2.<br/>
+            <see langword="true"/> if SDL2, <see langword="false"/> if SDL3.<br/>
+            This is <see langword="true"/> for Linux versions below (not including) 1.4.5.<br/>
+            This is separate then <see cref="P:cModLoader.OS.IsSDL2"/>, this will check the versions not actual if its using SDL.
+            <para>Newer versions switch to SDL3.</para>
+            </summary>
+        </member>
+        <member name="P:cModLoader.Terraria.VersionChecks.Using_Modern_InGameInterface">
+            <summary> 
+            Is Terraria using a user interface array to store in game (in world) UI.<br/>
+            This is <see langword="true"/> for versions after and including 1.3.3.
+            <para>Older modern UI versions have mostly a single functions with all drawing things.</para>
+            </summary>
+        </member>
+        <member name="P:cModLoader.Terraria.VersionChecks.Using_Modern_UIInterfaceScaling">
+            <summary> 
+            Is Terraria using a UI interface scaling through stuff like <c>Terraria.GameInput.PlayerInput.SetZoom_UI()</c>.<br/>
+            This is <see langword="true"/> for versions after and including 1.3.5.
+            <para>Older modern UI versions either manually calculate UI scaling or don't.</para>
+            </summary>
+        </member>
+        <member name="P:cModLoader.Terraria.VersionChecks.Using_Modern_UISliders">
+            <summary> 
+            Is Terraria using UI class slider.<br/>
+            This is <see langword="true"/> for versions after and including 1.4.
+            <para>Older modern UI versions either manually draw sliders or don't use them at all.</para>
+            </summary>
+        </member>
+        <member name="P:cModLoader.Terraria.VersionChecks.Using_Modern_RichInputs">
+            <summary> 
+            Is Terraria using things like "UIElement.LeftClick" and "UIElement.RightClick" rather then just "UIElement.OnClick".<br/>
+            This is <see langword="true"/> for versions after and including 1.4.4.8.
+            <para>Older modern UI versions have less options and do not split right and left clicking.</para>
+            </summary>
+        </member>
+        <member name="P:cModLoader.Terraria.VersionChecks.Using_Modern_MousePosXY">
+            <summary> 
+            Is Terraria using "mouseX" and "mouseY".<br/>
+            This is <see langword="true"/> for versions after and including 1.1.
+            <para>Other versions use a different method <see cref="M:Microsoft.Xna.Framework.Input.Mouse.GetState"/> is always available.</para>
+            </summary>
+        </member>
+        <member name="P:cModLoader.Terraria.VersionChecks.Using_InGamePauseMenu">
+            <summary> 
+            Is Terraria using an "in game" pause menu.<br/>
+            This is <see langword="true"/> for versions after and including 1.2.3.
+            <para>Older versions just quit to main menu and had no pause menu.</para>
+            </summary>
+        </member>
+        <member name="P:cModLoader.Terraria.VersionChecks.Using_LangSystem">
+            <summary> 
+            Is Terraria using a dynamic language system.<br/>
+            This is <see langword="true"/> for versions after and including 1.3.
+            <para>Older versions use hard coded strings (idk how other languages worked).</para>
+            </summary>
+        </member>
+        <member name="T:cModLoader.Terraria.Audio">
+            <summary> Stuff for audio </summary>
+        </member>
+        <member name="F:cModLoader.Terraria.Audio.SoundVersion">
+            <summary> What sound method is terraria using. </summary>
+        </member>
+        <member name="F:cModLoader.Terraria.Audio.SoundVersions.SoundEngine">
+            <summary> 1.4 - 1.4.5.5 : SoundEngine.PlaySound(int, int, int, int, float, float) </summary>
+        </member>
+        <member name="F:cModLoader.Terraria.Audio.SoundVersions.MainNew">
+            <summary> 1.3.4 - 1.3.5.3 : Main.PlaySound(int, int, int, int, float, float) </summary>
+        </member>
+        <member name="F:cModLoader.Terraria.Audio.SoundVersions.Main">
+            <summary> 0.7 - 1.3.3.3 : Main.PlaySound(int, int, int, int) </summary>
+        </member>
+        <member name="F:cModLoader.Terraria.Audio.SoundVersions.None">
+            <summary> 0.1 : Needs custom implementation </summary>
+        </member>
+        <member name="T:cModLoader.Terraria.Utils">
+            <summary> Utils, not sure what im going to put here</summary>
+        </member>
+        <member name="M:cModLoader.Terraria.Utils.GetMain">
+            <summary>
+            Use <see cref="F:cModLoader.Utils.GameReference.StaticReference"/> instead to get cached, static results.
+            <para>
+            <paramref name="Windows"/>: Walks backwards from <see cref="P:System.Windows.Forms.Application.OpenForms"/> and events to get the instance of Terraria.Main (This is slow so cache the result).
+            </para>
+            <para>
+            <paramref name="Linux"/>: Uses <see cref="P:System.AppDomain.CurrentDomain"/> and the "UnhandledException" event to get the instance of Terraria.Main (This is faster then windows but should still be cached).
+            </para>
+            This can be used in legacy UI versions (<see cref="P:cModLoader.Terraria.VersionChecks.Using_LegacyUISystem"/>) to get "main" because Main.instance does not exist.<br/>
+            Mainly meant for testing.
+            </summary>
+        </member>
+        <member name="M:cModLoader.Terraria.Utils.GetMainWindows">
+            <summary> Gets <see cref="T:Microsoft.Xna.Framework.Game"/> instance from <see cref="P:System.Windows.Forms.Application.OpenForms"/>. </summary>
+        </member>
+        <member name="M:cModLoader.Terraria.Utils.GetMainLinux">
+            <summary> Gets <see cref="T:Microsoft.Xna.Framework.Game"/> instance from <see cref="P:System.AppDomain.CurrentDomain"/>.UnhandledException </summary>
+        </member>
+        <member name="T:cModLoader.Terraria.Colour">
+            <summary> Colours terraria seems to use.<br/>Yes, this uses the proper spelling of "Colour" </summary>
+        </member>
+        <member name="M:cModLoader.Terraria.Colour.hsv_to_rgb(System.Single,System.Single,System.Single,System.Single)">
+            <summary> This doesn't exist in Terraria, its mostly a util.<br/><paramref name="hue"/> is a value between 0 and 1<para><see href="https://blog.kenanb.com/code/cg/2024/03/03/converting-hsv-to-rgb.html"/> </para></summary>
+        </member>
+        <member name="T:cModLoader.Terraria.StaticReference">
+            <summary> Some things that are in Terraria's Main class </summary>
+        </member>
+        <member name="P:cModLoader.Terraria.StaticReference.Main">
+            <summary> This is only for static references only, no instance of Main is available. </summary>
+        </member>
+        <member name="P:cModLoader.Terraria.StaticReference.PlayerInput">
+            <summary> This is only for static references only, no instance of PlayerInput is available. </summary>
+        </member>
+        <member name="P:cModLoader.Terraria.StaticReference.Lang">
+            <summary> This is only for static references only, no instance of Lang is available. </summary>
+        </member>
+        <member name="T:cModLoader.Terraria.Textures">
+            <summary> Stuff for textures </summary>
+        </member>
+        <member name="M:cModLoader.Terraria.Textures.LoadTexture(System.String)">
+            <summary> Load an XNB texture using the Xna method, Terraria implements its own methods but this should always work. </summary>
+        </member>
+        <member name="M:cModLoader.Terraria.Textures.LoadRawTexture(System.String)">
+            <summary> Load an image texture using the <see cref="M:Microsoft.Xna.Framework.Graphics.Texture2D.FromStream(Microsoft.Xna.Framework.Graphics.GraphicsDevice,System.IO.Stream)"/> method, this is used to load image that aren't XNB files. </summary>
+        </member>
+        <member name="M:cModLoader.Terraria.Textures.LoadRawTexture(System.IO.Stream)">
+            <summary> Load an image texture using the <see cref="M:Microsoft.Xna.Framework.Graphics.Texture2D.FromStream(Microsoft.Xna.Framework.Graphics.GraphicsDevice,System.IO.Stream)"/> method, this is used to load image that aren't XNB files.</summary>
+        </member>
+        <member name="T:cModLoader.Terraria.Relogic">
+            <summary> Some reference to the Relogic.dll stuff. </summary>
+        </member>
+        <member name="M:cModLoader.Terraria.Relogic.HackAsset``1(``0,System.String)">
+            <summary>
+            Creates an Asset type with T (<typeparamref name="T"/>), by default this will be loaded with <paramref name="value"/>.<br/>
+            This is not put in any database in Terraria/Relogic so loading and unloading (or any other automatic features) are not implemented.<br/>
+            So only use in cases where those features aren't needed or aren't important.
+            <para>
+            This is NOT the correct way of doing this, Relogic's Asset code is very confusing and relies heavily on itself<br/>
+            therefor doing this properly would require a ridicules amount of work without compile time referencing.
+            </para>
+            I do not know what <paramref name="name"/> is for but its there if you need it.
+            <para>
+            This only works in versions where <see cref="P:cModLoader.Terraria.VersionChecks.Using_RelogicAssets"/> is <see langword="true"/>.
+            </para>
+            </summary>
+        </member>
+        <member name="M:cModLoader.Terraria.Relogic.Asset``1(System.String)">
+            <summary>
+            Gets an asset using Main.Assets.Request&lt;<typeparamref name="T"/>&gt;(<paramref name="name"/>)
+            <para>
+            This only works in versions where <see cref="P:cModLoader.Terraria.VersionChecks.Using_RelogicAssets"/> is <see langword="true"/>.
+            </para>
+            </summary>
+        </member>
+        <member name="T:cModLoader.Terraria.VanillaReference">
+            
+            Vanilla Terraria References
+            
+        </member>
+        <member name="T:cModLoader.Terraria._Main">
+            <summary> Don't use this, used either <see cref="T:cModLoader.Terraria.StaticReference"/> or <see cref="T:cModLoader.Utils.Dynamic"/>. <br/>This can be useful for some things but seems to cause problems all the time and is missing things like ambiguous reflection matches. </summary>
+        </member>
+        <member name="T:cModLoader.Utils.ModHelper">
+            <summary>
+            General values that should be helpful.
+            </summary>
+        </member>
+        <member name="P:cModLoader.Utils.ModHelper.ScreenWidth">
+            <summary> Screen width according to <c>Terraria.Main.screenWidth</c> </summary>
+        </member>
+        <member name="P:cModLoader.Utils.ModHelper.ScreenHeight">
+            <summary> Screen height according to <c>Terraria.Main.screenHeight</c> </summary>
+        </member>
+        <member name="P:cModLoader.Utils.ModHelper.IsInWorld">
+            <summary> Is the player in the world according to <c>!Terraria.Main.gameMenu</c><br/>Always <see langword="true"/> for version 0.1/Alpha.</summary>
+        </member>
+        <member name="P:cModLoader.Utils.ModHelper.HideUI">
+            <summary> Should the in game UI be hidden according to <c>Terraria.Main.hideUI</c><br/>Always <see langword="false"/> for version 0.1/Alpha.</summary>
+        </member>
+        <member name="P:cModLoader.Utils.ModHelper.Projectiles">
+            <summary> Gets the list of projectiles according to <c>Terraria.Main.projectile</c></summary>
+        </member>
+        <member name="P:cModLoader.Utils.ModHelper.NPCs">
+            <summary> Gets the list of projectiles according to <c>Terraria.Main.npc</c></summary>
+        </member>
+        <member name="P:cModLoader.Utils.ModHelper.Players">
+            <summary> Gets the list of players according to <c>Terraria.Main.player</c></summary>
+        </member>
+        <member name="P:cModLoader.Utils.ModHelper.PlayerInventory">
+            <summary> Gets the user's player's inventory according to <c>Terraria.Main.player[Terraria.Main.myPlayer].inventory</c></summary>
+        </member>
+        <member name="P:cModLoader.Utils.ModHelper.Player">
+            <summary> Gets the user's player according to <c>Terraria.Main.player[Terraria.Main.myPlayer]</c> (equivalent to <c>Terraria.Main.LocalPlayer</c>) </summary>
+        </member>
+        <member name="P:cModLoader.Utils.ModHelper.PlayerHeldItem">
+            <summary> Gets the user's player according to <c>Terraria.Main.player[Terraria.Main.myPlayer].inventory[Terraria.Main.player[Terraria.Main.myPlayer].selectedItem]</c> (equivalent to <c>Terraria.Main.HeldItem</c>) </summary>
+        </member>
+        <member name="P:cModLoader.Utils.ModHelper.MyPlayer">
+            <summary> Gets the user's player id/index according to <c>Terraria.Main.myPlayer</c></summary>
+        </member>
+        <member name="P:cModLoader.Utils.ModHelper.MousePos">
+            <summary> Gets the mouse position for UI stuff according to <c>Terraria.Main.mouseX</c> and <c>Terraria.Main.mouseY</c> (equivalent to <c>Terraria.Main.MouseScreen</c>)<para>Only works in versions above and including 1.1. If not in that version this returns <see cref="M:Microsoft.Xna.Framework.Input.Mouse.GetState"/>.</para></summary>
+        </member>
+        <member name="M:cModLoader.Utils.ModHelper.SetZoom_UI">
+            <summary> Calls <c>Terraria.GameInput.PlayerInput.SetZoom_UI()</c>.<para>Only works in versions above and including 1.3.5.</para></summary>
+        </member>
+        <member name="M:cModLoader.Utils.ModHelper.SetZoom_Background">
+            <summary> Calls <c>Terraria.GameInput.PlayerInput.SetZoom_Background()</c>.<para>Only works in versions above and including 1.3.5.</para></summary>
+        </member>
+        <member name="M:cModLoader.Utils.ModHelper.SetZoom_World">
+            <summary> Calls <c>Terraria.GameInput.PlayerInput.SetZoom_World()</c>.<para>Only works in versions above and including 1.3.5.</para></summary>
+        </member>
+        <member name="M:cModLoader.Utils.ModHelper.SetZoom_Unscaled">
+            <summary> Calls <c>Terraria.GameInput.PlayerInput.SetZoom_Unscaled()</c>.<para>Only works in versions above and including 1.3.5.</para></summary>
+        </member>
+        <member name="M:cModLoader.Utils.ModHelper.SetZoom_MouseInWorld">
+            <summary> Calls <c>Terraria.GameInput.PlayerInput.SetZoom_MouseInWorld()</c>.<para>Only works in versions above and including 1.3.5.</para></summary>
+        </member>
+        <member name="M:cModLoader.Utils.ModHelper.SetZoom_Scaled(System.Single)">
+            <summary> Calls <c>Terraria.GameInput.PlayerInput.SetZoom_Scaled()</c>.<para>Only works in versions above and including 1.3.5.</para></summary>
+        </member>
+        <member name="M:cModLoader.Utils.InputHelper.SetState">
+            <summary> Set in post-draw. </summary>
+        </member>
+        <member name="P:cModLoader.Utils.InputHelper.MouseInfo">
+            <summary> Gets the current mouse state from Terraria.GameInput.PlayerInput.MouseInfo or from <see cref="T:cModLoader.Utils.InputHelper"/> (from <see cref="M:Microsoft.Xna.Framework.Input.Mouse.GetState"/> which was cached before the game frame updated) if it doesn't exist. </summary>
+        </member>
+        <member name="P:cModLoader.Utils.InputHelper.MouseInfoOld">
+            <summary> Gets the old/previous frame's mouse state from Terraria.GameInput.PlayerInput.MouseInfo or from <see cref="T:cModLoader.Utils.InputHelper"/> (from last frame's <see cref="M:Microsoft.Xna.Framework.Input.Mouse.GetState"/> which was cached before the game frame updated) if it doesn't exist. </summary>
+        </member>
+        <member name="P:cModLoader.Utils.InputHelper.KeyboardInfo">
+            <summary> Gets the current keyboard state. This is not related to Terraria.GameInput.PlayerInput. </summary>
+        </member>
+        <member name="P:cModLoader.Utils.InputHelper.KeyboardInfoOld">
+            <summary> Gets the old/previous frame's keyboard state. This is not related to Terraria.GameInput.PlayerInput. </summary>
+        </member>
+        <member name="P:cModLoader.Utils.InputHelper.WasLeftMousePressUp">
+            <summary> Did the left mouse button just stop being held down (un-pressed). </summary>
+        </member>
+        <member name="P:cModLoader.Utils.InputHelper.WasLeftMousePressDown">
+            <summary> Did the left mouse button just start being held down (on-pressed). </summary>
+        </member>
+        <member name="P:cModLoader.Utils.InputHelper.IsLeftMouseDown">
+            <summary> Is the left mouse button being held down (pressed). </summary>
+        </member>
+        <member name="P:cModLoader.Utils.InputHelper.WasLeftMouseDown">
+            <summary> Was the left mouse button being held down (pressed). </summary>
+        </member>
+        <member name="P:cModLoader.Utils.InputHelper.IsLeftMouseUp">
+            <summary> Is the left mouse button not being held down (pressed). </summary>
+        </member>
+        <member name="P:cModLoader.Utils.InputHelper.WasLeftMouseUp">
+            <summary> Was the left mouse button not being held down (pressed). </summary>
+        </member>
+        <member name="P:cModLoader.Utils.InputHelper.WasRightMousePressUp">
+            <summary> Did the right mouse button just stop being held down (un-pressed). </summary>
+        </member>
+        <member name="P:cModLoader.Utils.InputHelper.WasRightMousePressDown">
+            <summary> Did the right mouse button just start being held down (on-pressed). </summary>
+        </member>
+        <member name="P:cModLoader.Utils.InputHelper.IsRightMouseDown">
+            <summary> Is the right mouse button being held down (pressed). </summary>
+        </member>
+        <member name="P:cModLoader.Utils.InputHelper.WasRightMouseDown">
+            <summary> Was the right mouse button being held down (pressed). </summary>
+        </member>
+        <member name="P:cModLoader.Utils.InputHelper.IsRightMouseUp">
+            <summary> Is the right mouse button not being held down (pressed). </summary>
+        </member>
+        <member name="P:cModLoader.Utils.InputHelper.WasRightMouseUp">
+            <summary> Was the right mouse button not being held down (pressed). </summary>
+        </member>
+        <member name="P:cModLoader.Utils.InputHelper.MousePos">
+            <summary> The current frames mouse position. </summary>
+        </member>
+        <member name="T:cModLoader.Utils.Extensions">
+            <summary> Extensions. </summary>
+        </member>
+        <member name="M:cModLoader.Utils.Extensions.AsDynamic(System.Object)">
+            <summary> Converts this to cModLoader's <see cref="T:cModLoader.Utils.Dynamic"/> type.</summary>
+        </member>
+        <member name="M:cModLoader.Utils.Extensions.CreateInstance(System.Type)">
+            <summary> Create an instance of <paramref name="type"/>.</summary>
+        </member>
+        <member name="M:cModLoader.Utils.Extensions.CreateDynamicInstance(System.Type)">
+            <summary> Create a <see cref="T:cModLoader.Utils.Dynamic"/> instance of <paramref name="type"/>.</summary>
+        </member>
+        <member name="M:cModLoader.Utils.Extensions.CreateDynamicInstance(System.Type,System.Object[])">
+            <summary> Create a <see cref="T:cModLoader.Utils.Dynamic"/> instance of <paramref name="type"/> with <paramref name="parameters"/>.</summary>
+        </member>
+        <member name="T:cModLoader.Utils.GameReference">
+            <summary>
+            Reference to game stuff, used almost everywhere so things can easily be added without messing with previous references.
+            </summary>
+        </member>
+        <member name="F:cModLoader.Utils.GameReference.StaticReference">
+            <summary> Static reference for <see cref="T:cModLoader.Utils.GameReference"/>, if you have access to a local one use that, this is a last resort.</summary>
+        </member>
+        <member name="M:cModLoader.Utils.GameReference.#ctor(Microsoft.Xna.Framework.Game)">
+            <summary> Creates </summary>        
+        </member>
+        <member name="F:cModLoader.Utils.GameReference.main">
+            <summary> Terraria's main instance. </summary>
+        </member>
+        <member name="F:cModLoader.Utils.GameReference.game">
+            <summary> Terraria's main but as its inheriting <see cref="T:Microsoft.Xna.Framework.Game"/> type. </summary>
+        </member>
+        <member name="F:cModLoader.Utils.GameReference.spriteBatch">
+            <summary> <see cref="T:Microsoft.Xna.Framework.Graphics.SpriteBatch"/> used for rendering. </summary>
+        </member>
+        <member name="F:cModLoader.Utils.GameReference.gameTime">
+            <summary> <see cref="T:Microsoft.Xna.Framework.GameTime"/> used for game time stuff. </summary>
+        </member>
+        <member name="T:cModLoader.Utils.ReLogicAsset`1">
+            <summary>
+            Wrapper for Relogic's Asset&lt;T&gt; class where <see cref="P:cModLoader.Utils.ReLogicAsset`1.Asset"/> is the asset and <see cref="P:cModLoader.Utils.ReLogicAsset`1.Value"/> is the "Value" of the asset.<br/>
+            In versions where this does not exist (See <see cref="P:cModLoader.Terraria.VersionChecks.Using_RelogicAssets"/>) both <see cref="P:cModLoader.Utils.ReLogicAsset`1.Asset"/> and <see cref="P:cModLoader.Utils.ReLogicAsset`1.Value"/> are the same thing with type <typeparamref name="T"/>.
+            <para>
+            This is not used to create new instances of Asset&lt;T&gt;, for that see <see cref="M:cModLoader.Terraria.Relogic.Asset``1(System.String)"/> or <see cref="M:cModLoader.Terraria.Relogic.HackAsset``1(``0,System.String)"/>
+            </para>
+            </summary>
+        </member>
+        <member name="F:cModLoader.Utils.ReLogicAsset`1.DynamicReference">
+            <summary> This <see cref="T:cModLoader.Utils.Dynamic"/> instance, use <see cref="P:cModLoader.Utils.ReLogicAsset`1.Asset"/> or <see cref="P:cModLoader.Utils.ReLogicAsset`1.Value"/> to get related values.</summary>
+        </member>
+        <member name="P:cModLoader.Utils.ReLogicAsset`1.Asset">
+            <summary> if <see cref="P:cModLoader.Terraria.VersionChecks.Using_RelogicAssets"/> then its type Asset&lt;T&gt; otherwise its <typeparamref name="T"/>. </summary>
+        </member>
+        <member name="P:cModLoader.Utils.ReLogicAsset`1.Value">
+            <summary> Always <typeparamref name="T"/>, can be used to safely obtain the value. </summary>
+        </member>
+        <member name="T:cModLoader.Utils.Dynamic">
+            <summary>
+            Used instead of <see langword="dynamic"/> because Linux cant seem to handle loading it in some contexts.<br/>
+            This is also faster then <see langword="dynamic"/> and reflection as it creates delegates for and caches getters, setters and methods.
+            </summary>
+        </member>
+        <member name="F:cModLoader.Utils.Dynamic.Value">
+            <summary>
+            The object this instance is representing.<br/>
+            You can set this to a new value to retain type information without needing to recompute anything but make sure its the same type.
+            </summary>
+        </member>
+        <member name="P:cModLoader.Utils.Dynamic.ValueType">
+            <summary> The type of the object this instance is representing or the static type provided. </summary>
+        </member>
+        <member name="M:cModLoader.Utils.Dynamic.#ctor(System.Type)">
+            <summary> Used for accessing methods and fields form an static type. </summary>
+        </member>
+        <member name="M:cModLoader.Utils.Dynamic.#ctor(System.Object)">
+            <summary> Used for accessing methods and fields form an instance of an object. </summary>
+        </member>
+        <member name="M:cModLoader.Utils.Dynamic.Invoke``1(System.String,System.Object[])">
+            <summary> Natively calls a function with a given name.</summary>
+        </member>
+        <member name="M:cModLoader.Utils.Dynamic.Invoke(System.String,System.Object[])">
+            <summary> Natively calls a function with a given name.</summary>
+        </member>
+        <member name="M:cModLoader.Utils.Dynamic.Invoke2``1(System.String,System.Object[])">
+            <summary> Natively calls a function with a given name. (each element in <paramref name="parameters"/> is a parameter)<para>Does not handle functions with same names, use <see cref="M:cModLoader.Utils.Dynamic.OverrideCachedMethod(System.String,System.Type[],System.Reflection.MethodInfo)"/> to customize invocation. </para></summary>
+        </member>
+        <member name="M:cModLoader.Utils.Dynamic.Invoke2(System.String,System.Object[])">
+            <summary> Natively calls a function with a given name. (each element in <paramref name="parameters"/> is a parameter)<para>Does not handle functions with same names, use <see cref="M:cModLoader.Utils.Dynamic.OverrideCachedMethod(System.String,System.Type[],System.Reflection.MethodInfo)"/> to customize invocation. </para></summary>
+        </member>
+        <member name="M:cModLoader.Utils.Dynamic.GetValue``1(System.String)">
+            <summary> Natively gets a field or property.<br/>Supports nested values, Eg. <c>"Rect.Size.Width"</c> is valid.</summary>
+        </member>
+        <member name="M:cModLoader.Utils.Dynamic.SetValue``1(System.String,``0)">
+            <summary> Natively sets a field or property to <paramref name="newValue"/>.<br/>Supports nested values, Eg. <c>"Rect.Size.Width"</c> is valid.<br/>Returns <paramref name="newValue"/>.</summary>
+        </member>
+        <member name="M:cModLoader.Utils.Dynamic.OverrideCachedMethod(System.String,System.Type[],System.Reflection.MethodInfo)">
+            <summary> Allows you to override what method is cached<br/>When <see cref="M:cModLoader.Utils.Dynamic.Invoke(System.String,System.Object[])"/> or <see cref="M:cModLoader.Utils.Dynamic.Invoke``1(System.String,System.Object[])"/> is call <paramref name="overrideMethod"/> will be called instead.<br/>This will not do anything to original vanilla functionality.</summary>
+        </member>
+        <member name="M:cModLoader.Utils.Dynamic.CreateFunction(System.Reflection.MethodInfo,System.String)">
+            <summary> Creates lambda expression that natively calls a given function. </summary>
+        </member>
+        <member name="M:cModLoader.Utils.Dynamic.CreateGetter(System.Type,System.String)">
+            <summary> Creates lambda expression that natively gets a value. </summary>
+        </member>
+        <member name="M:cModLoader.Utils.Dynamic.CreateSetter(System.Type,System.String)">
+            <summary> Creates lambda expression that natively sets a value. </summary>
+        </member>
+        <member name="M:cModLoader.Utils.Dynamic.CleanType(System.Type)">
+            <summary>
+            Removes cache data and calls <see cref="M:System.GC.Collect"/>, this may not actually do anything if there are <see cref="T:cModLoader.Utils.Dynamic"/> instances that exist.<br/>
+            Does not clean base types.
+            </summary>        
+        </member>
+        <member name="M:cModLoader.Utils.Dynamic.InstanceCount(System.Type)">
+            <summary>
+            Returns the number of <see cref="T:cModLoader.Utils.Dynamic"/> instances exist with <paramref name="type"/>.<br/>Returns -1 if <paramref name="type"/> was not cached.<br/>
+            </summary>        
+        </member>
+        <member name="M:cModLoader.Window.IWindow.Update(cModLoader.Window.Window)">
+            <summary> Update code, return <see langword="true"/> to close and <see langword="false"/> to stay open.</summary>
+        </member>
+        <member name="M:cModLoader.Window.IWindow.Close(cModLoader.Window.Window)">
+            <summary> Close code, ran when the window is closed.</summary>
+        </member>
+        <member name="M:cModLoader.Window.IWindow.Open(cModLoader.Window.Window)">
+            <summary> Open code, ran when the window is opened.</summary>
+        </member>
+        <member name="M:cModLoader.Window.Component.Update(System.Boolean)">
+            <summary> WARNING: On windows if using SDL this is NOT called when moving the window, this requires a lot of work to fix so i didn't fix it. </summary>
+        </member>
+        <member name="F:cModLoader.Window.Window.ActiveWindows">
+            <summary> List of active non-blocking windows, these are cModLoader windows not any Terraria, Xna, or FNA made windows.</summary>
+        </member>
+        <member name="M:cModLoader.Window.Window.UpdateWindows">
+            <summary> Update all <see cref="F:cModLoader.Window.Window.ActiveWindows"/>. This can only be ran on the main thread (mainly due to an SDL thing).</summary>
+        </member>
+        <member name="F:cModLoader.Window.Window.nativeType">
+            <summary> Either <see cref="T:cModLoader.Window.FormWindow"/> or <see cref="T:cModLoader.Accessibility.SDL3.SDL3_Window"/> (this is a custom cModLoader SDL class). This will likely also have an SDL2 window but thats not implamented yet. </summary>
+        </member>
+        <member name="E:cModLoader.Window.Window.OnDraw">
+            <summary> This is called after the default stuff is drawn </summary>
+        </member>
+        <member name="M:cModLoader.Window.Window.Open(System.Boolean,System.Boolean)">
+            <summary>
+            Set the window to be opened. Non-<paramref name="blocking"/> windows do not work with SDL.<br/>
+            If <paramref name="blocking"/> is <see langword="true"/>, this can only be called on the main thread and will start updating immediately until closed.<br/>
+            If <paramref name="blocking"/> is <see langword="false"/>, this window will be updated on the main thread either by Terraria or cModLauncher.<br/>
+            <para><see langword="⚠ Blocking Windows.Forms create a new thread."/></para>
+            </summary>
+        </member>
+        <member name="M:cModLoader.Window.Window.DrawElement(cModLoader.Window.Component)">
+            <summary> Draws the elements and its children </summary>
+        </member>
+        <member name="M:cModLoader.Window.Window.Draw_FillRect(System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary> Draws a filled rectangle </summary>
+        </member>
+        <member name="M:cModLoader.Window.Window.Draw_Rect(System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary> Draws a rectangle outline </summary>
+        </member>
+        <member name="M:cModLoader.Window.Window.Draw_SetDrawColour(System.Byte,System.Byte,System.Byte,System.Byte)">
+            <summary> Sets the draw colour </summary>
+        </member>
+        <member name="M:cModLoader.Window.Window.Draw_Clear">
+            <summary> Clears the drawing space </summary>
+        </member>
+        <member name="M:cModLoader.Window.Window.Draw_Text(System.Int32,System.Int32,System.Single,System.String,System.Single,System.Single)">
+            <summary> Draws text.<br/>SDL has a limited characters set so some charecters wont draw. </summary>
+        </member>
+        <member name="M:cModLoader.Window.Window.Get_MousePos(System.Int32@,System.Int32@)">
+            <summary> Gets mouse position <para>TODO: Change to variables so its not called a million times per draw </para> </summary>
+        </member>
+        <member name="M:cModLoader.Window.Window.Get_MouseDown(System.Boolean@,System.Boolean@,System.Boolean@)">
+            <summary> Gets if the mouse buttons are down <para>TODO: Change to variables so its not called a million times per draw </para> </summary>
+        </member>
+        <member name="M:cModLoader.Window.Window.Set_WindowSize(System.Int32,System.Int32)">
+            <summary> Sets if the window size, this does not account for any border </summary>
+        </member>
+        <member name="M:cModLoader.Window.Window.Get_WindowSize(System.Int32@,System.Int32@)">
+            <summary> Gets if the window size, this does not account for any border </summary>
+        </member>
+        <member name="M:cModLoader.Window.Window.Get_KeyIsDown(cModLoader.Window.Keys)">
+            <summary> Returns if a key is pressed.<br/>This may not work in SDL, see <see cref="M:cModLoader.Accessibility.SDL3.KeysToSDL3ScanCode(cModLoader.Window.Keys)"/> if the key converts properly, most basic ones do but others dont. </summary>
+        </member>
+        <member name="M:cModLoader.Window.Window.Get_Focused(System.Boolean@)">
+            <summary> Gets if the window is focused</summary>
+        </member>
+        <member name="M:cModLoader.Window.Window.Draw_DefaultIcon(cModLoader.Accessibility.MessageBoxIcon,System.Int32,System.Int32)">
+            <summary> Draws a default icon from <see cref="T:cModLoader.Accessibility.MessageBoxIcon"/> </summary>
+        </member>
+        <member name="T:cModLoader.Properties.Resources">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:cModLoader.Properties.Resources.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:cModLoader.Properties.Resources.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="T:cModLoader.cModLoaderConfig">
+            <summary> Config for cModLoader, this is not the same as <see cref="T:cModLoader.ModComponents.Config"/></summary>
+        </member>
+        <member name="F:cModLoader.cModLoaderConfig.SteamSpoofer">
+            <summary> Definitely not making this one public.<br/>Currently only works in versions before 1.3. </summary>
+        </member>
+        <member name="T:cModLoader.ModContent">
+            <summary>
+            <para> ModContent, has the main function for loading mod content </para>
+            <para> This class is because a lot of <see cref="T:cModLoader.ModLoader"/>'s code is ran before terraria is loaded and accessing Terraria's assembly before it is loaded will cause errors </para>
+            </summary>
+        </member>
+        <member name="P:cModLoader.ModContent.DllCount">
+            <summary> Gets the number of loaded dlls </summary>
+        </member>
+        <member name="P:cModLoader.ModContent.ModCount">
+            <summary> Gets the number of loaded mods </summary>
+        </member>
+        <member name="P:cModLoader.ModContent.PreModCount">
+            <summary> Gets the number of loaded patches </summary>
+        </member>
+        <member name="M:cModLoader.ModContent.GetDll(System.Int32,cModLoader.ModComponents.Mod@)">
+            <summary> Gets a <paramref name="dll"/> with a given <paramref name="index"/> </summary> <returns> if the <paramref name="dll"/> at the given <paramref name="index"/> exists </returns>
+        </member>
+        <member name="M:cModLoader.ModContent.GetMod(System.Int32,cModLoader.ModComponents.Mod@)">
+            <summary> Gets a <paramref name="mod"/> with a given <paramref name="index"/> </summary> <returns> if the <paramref name="mod"/> at the given <paramref name="index"/> exists </returns>
+        </member>
+        <member name="M:cModLoader.ModContent.GetPreMod(System.Int32,cModLoader.ModComponents.PreMod@)">
+            <summary> Gets a <paramref name="preMod"/> with a given <paramref name="index"/> </summary> <returns> if the <paramref name="preMod"/> at the given <paramref name="index"/> exists </returns>
+        </member>
+        <member name="M:cModLoader.ModContent.GetMod(cModLoader.ModComponents.PreMod,cModLoader.ModComponents.Mod@)">
+            <summary> Gets a <paramref name="preMod"/> linked to a <paramref name="mod"/> </summary> <returns> if the <paramref name="preMod"/> links to a <paramref name="mod"/> </returns>
+        </member>
+        <member name="T:cModLoader.ModLoader">
+            <summary>
+            Mod loader, has the main function for loading dlls, mods and patches, also has some functions to get mods and stuff.
+            </summary>
+        </member>
+        <member name="T:cModLoader.ModLoader.ModContext">
+            <summary> Used for error handling, if a mod fails the game wont crash, tModLoader uses c#'s built in environments but this does not exist in .net Framework 4.5.2 </summary>
+        </member>
+        <member name="M:cModLoader.ModLoader.ModContext.RunUnderNullContext(System.Action,System.String)">
+            <summary> Runs code under no context. Typically used for base game.</summary>
+        </member>
+        <member name="M:cModLoader.ModLoader.ModContext.RunUnderModLoaderContext(System.Action,System.String)">
+            <summary> Runs code under cModLoader's context.</summary>
+        </member>
+        <member name="M:cModLoader.ModLoader.ModContext.RunUnderPreModContext(cModLoader.ModComponents.PreMod,System.Action,System.String)">
+            <summary> Runs code under a given <paramref name="preMod"/>'s context.</summary>
+        </member>
+        <member name="M:cModLoader.ModLoader.ModContext.RunUnderModContext(cModLoader.ModComponents.Mod,System.Action,System.String)">
+            <summary> Runs code under a given <paramref name="mod"/>'s context.</summary>
+        </member>
+        <member name="M:cModLoader.ModLoader.ModContext.RunUnderNullContext``1(System.Func{``0},System.String)">
+            <summary> Runs code under no context. Typically used for base game.<br/>If an error occurs <typeparamref name="T"/> will be <see langword="default"/>.</summary>
+        </member>
+        <member name="M:cModLoader.ModLoader.ModContext.RunUnderModLoaderContext``1(System.Func{``0},System.String)">
+            <summary> Runs code under cModLoader's context.<br/>If an error occurs <typeparamref name="T"/> will be <see langword="default"/>.</summary>
+        </member>
+        <member name="M:cModLoader.ModLoader.ModContext.RunUnderPreModContext``1(cModLoader.ModComponents.PreMod,System.Func{``0},System.String)">
+            <summary> Runs code under a given <paramref name="preMod"/>'s context.<br/>If an error occurs <typeparamref name="T"/> will be <see langword="default"/>.</summary>
+        </member>
+        <member name="M:cModLoader.ModLoader.ModContext.RunUnderModContext``1(cModLoader.ModComponents.Mod,System.Func{``0},System.String)">
+            <summary> Runs code under a given <paramref name="mod"/>'s context.<br/>If an error occurs <typeparamref name="T"/> will be <see langword="default"/>. </summary>
+        </member>
+        <member name="M:cModLoader.cModLoaderPre.InitSteam1">
+            
+            Other
+            
+        </member>
+        <member name="T:cModLoader.cModLoaderPre.WrappedGraphicsDeviceManager">
+            
+            Window Patch Stuff
+            
+            <summary> Wrapper for the graphics device so we can hook the begin and end drawing functions without IL modifications.<br/>Hopefully this doesn't change in game or else we are hooped.<br/>This works on windows and some Linux versions.</summary>
+        </member>
+        <member name="M:cModLoader.cModLoaderPre.PatchlessXnaPreHook">
+            <summary> Sets up things so cModLoader can run without patches. This function only works on Xna versions. </summary>
+        </member>
+        <member name="M:cModLoader.cModLoaderPre.PatchlessFNAPreHook">
+            <summary> Sets up things so cModLoader can run without patches. This function only works on FNA (or some versions of Linux). </summary>
+        </member>
+        <member name="M:cModLoader.cModLoaderPre.FNASupportsOrientationChangesHook">
+            <summary> FNA pre-hook for Terraria 1.4.1 and up. FNA >= 20.8.0.0.</summary>
+        </member>
+        <member name="M:cModLoader.cModLoaderPre.FNAConsoleHook(System.String)">
+            <summary> FAN pre-hook for Terraria 1.3.4.4 and below. FNA 0.0.0.1 </summary>
+        </member>
+        <member name="M:cModLoader.cModLoaderPre.FNAPreTickPollEventsHook(Microsoft.Xna.Framework.Game,Microsoft.Xna.Framework.Graphics.GraphicsAdapter@,System.Boolean[],System.Int32[],System.Boolean@)">
+            <summary> FAN pre-tick-hook intermediate state for Terraria 1.4.1 to 1.4.4.9. FNA >= 20.8.0.0 &lt; 25.8.0.0.</summary>
+        </member>
+        <member name="M:cModLoader.cModLoaderPre.FNAPreTickPollEventsHook2(Microsoft.Xna.Framework.Game,Microsoft.Xna.Framework.Graphics.GraphicsAdapter@,System.Boolean[],System.Boolean@)">
+            <summary> FAN pre-tick-hook intermediate state for Terraria 1.4.5 and up. FNA >= 25.8.0.0.</summary>
+        </member>
+        <member name="M:cModLoader.cModLoaderPre.MyHandler(System.String,System.IntPtr,System.Int32)">
+            <summary> Added to System.Internal.HandleCollector.HandleAdded.<br/>Not used through </summary>
+        </member>
+        <member name="T:cModLoader.cModLoader">
+            <summary> Main cModLoader mod, this is a default mod that handles some basic things </summary>
+        </member>
+        <member name="F:cModLoader.cModLoaderInitializer.LoadedAssembilies">
+            <summary> A dictionary of loaded assembily (Spelt wrong but i don't feal like changing it). Eg. "Terraria", "ReLogic" or "System.Windows.Forms" </summary>
+        </member>
+        <member name="F:cModLoader.cModLoaderInitializer.Debug">
+            <summary> Used for some things but mainly for keeping console.</summary>
+        </member>
+        <member name="F:cModLoader.cModLoaderInitializer.PatchOutOverride">
+            <summary> Should the mod loader output the patched terraria EXE, set to <see langword="false"/> when publishing. </summary>
+        </member>
+        <member name="M:cModLoader.cModLoaderInstaller.LaunchNewTerraria">
+            <summary> Launches a new terraria instance using <see cref="M:System.Diagnostics.Process.Start"/> (This uses <see cref="M:cModLoader.Path.FindTerrariaGlobally(System.String@,System.String@)"/> to get the path so it could be a cModLoader instance) </summary>
+        </member>
+        <member name="M:cModLoader.cModLoaderInstaller.DisplayError(System.String)">
+            <summary> returns false to make cleaner code as this is almost always used right before `return false;` </summary>
+        </member>
+        <member name="M:cModLoader.Output.ShutDownConsole(System.Boolean,System.Int32)">
+            <summary> Used to close console and its window,  </summary>
+        </member>
+        <member name="M:cModLoader.Output.Debug(System.Object)">
+            <summary> Prints console text if <see cref="F:cModLoader.cModLoaderInitializer.Debug"/> is <see langword="true"/>. </summary>
+        </member>
+        <member name="M:cModLoader.Output.Print(System.Object)">
+            <summary> Prints console text. </summary>
+        </member>
+        <member name="M:cModLoader.Output.Error(System.Object)">
+            <summary> Prints red console text this includes Terraria's formatting so "[c/FF0000:...]" is added. </summary>
+        </member>
+        <member name="F:cModLoader.Accessibility.PreferWindow">
+            <summary> Mainly used for testing. </summary>
+        </member>
+        <member name="P:cModLoader.Accessibility.ShouldUseSDL">
+            <summary> Should cModLoader use SDL. Checks (if it is running on not windows and <see cref="F:cModLoader.Accessibility.PreferWindow"/> is not forms) or (<see cref="F:cModLoader.Accessibility.PreferWindow"/> is SDL3 or SDL3). </summary>
+        </member>
+        <member name="M:cModLoader.Accessibility.SDL3.KeysToSDL3ScanCode(cModLoader.Window.Keys)">
+            <summary> This is a hand-done conversion so things that were not obvious was convert to <see cref="F:cModLoader.FNA.FNA_SDL3.SDL_Scancode.SDL_SCANCODE_UNKNOWN"/></summary>
+        </member>
+        <member name="T:cModLoader.Accessibility.SDL3.SDL3_Window">
+            <summary> An object used to create windows with SDL. It has nothing to do with SDL's actual SDL_Window.<br/>This is drawn using software, because otherwise it interferes with Terraria's rendering. </summary>
+        </member>
+        <member name="M:cModLoader.Accessibility.SDL3.SDL3_Window.#ctor">
+            <summary> Create an instance of this <see cref="T:cModLoader.Accessibility.SDL3.SDL3_Window"/> </summary>
+        </member>
+        <member name="M:cModLoader.Accessibility.SDL3.SDL3_Window.Finalize">
+            <summary> Calls <see cref="M:cModLoader.Accessibility.SDL3.SDL3_Window.Dispose"/> </summary>
+        </member>
+        <member name="M:cModLoader.Accessibility.SDL3.SDL3_Window.Dispose">
+            <summary> Frees all pointers </summary>
+        </member>
+        <member name="M:cModLoader.Accessibility.SDL3.SDL3_Window.SetAlloc(System.IntPtr,System.String)">
+            <summary> Sets a pointer to be freed when the instance is disposed </summary>
+        </member>
+        <member name="M:cModLoader.Accessibility.SDL3.SDL3_Window.ReAlloc(System.IntPtr,System.String)">
+            <summary> Frees the previous pointer and replaces it</summary>
+        </member>
+        <member name="M:cModLoader.Accessibility.SDL3.SDL3_Window.CreateWindow(System.String)">
+            <summary> Creates an SDL window with a title and a renderer </summary>
+        </member>
+        <member name="M:cModLoader.Accessibility.SDL3.SDL3_Window.CenterWindow">
+            <summary> Centers the window on screen </summary>
+        </member>
+        <member name="M:cModLoader.Accessibility.SDL3.SDL3_Window.Draw_Finalize">
+            <summary> Outputs draws elements to screen </summary>
+        </member>
+        <member name="M:cModLoader.Accessibility.SDL3.SDL3_Window.Draw_SetDrawColour(System.Byte,System.Byte,System.Byte,System.Byte)">
+            <summary> Clears the renderer </summary>
+        </member>
+        <member name="M:cModLoader.Accessibility.SDL3.SDL3_Window.Draw_Clear">
+            <summary> Clears the renderer </summary>
+        </member>
+        <member name="M:cModLoader.Accessibility.SDL3.SDL3_Window.Draw_Rect(System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary> Draws a rectangle outline </summary>
+        </member>
+        <member name="M:cModLoader.Accessibility.SDL3.SDL3_Window.Draw_FillRect(System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary> Draws a filled rectangle </summary>
+        </member>
+        <member name="T:cModLoader.Accessibility.MessageBoxIcon">
+            <summary> Icons for drawing. cModLoader is included but the rest are window icons, so idk if im aloud to use them </summary>
+        </member>
+        <member name="F:cModLoader.Accessibility.MessageBoxIcon.None">
+            <summary> nothing </summary>
+        </member>
+        <member name="F:cModLoader.Accessibility.MessageBoxIcon.Application">
+            <summary> The default windows application icon </summary>
+        </member>
+        <member name="F:cModLoader.Accessibility.MessageBoxIcon.Error">
+            <summary> White "X" inside of a red circle. </summary>
+        </member>
+        <member name="F:cModLoader.Accessibility.MessageBoxIcon.Information">
+            <summary> White "i" inside of a blue circle. </summary>
+        </member>
+        <member name="F:cModLoader.Accessibility.MessageBoxIcon.Question">
+            <summary> White "?" inside of a blue circle. </summary>
+        </member>
+        <member name="F:cModLoader.Accessibility.MessageBoxIcon.Shield">
+            <summary> This is not used in <see cref="T:System.Windows.Forms.MessageBoxIcon"/> but exist so i figured id include it. Shield icon, i think the same one as the admin icon. </summary>
+        </member>
+        <member name="F:cModLoader.Accessibility.MessageBoxIcon.Warning">
+            <summary> Black "!" inside of a orange/yellow triangle. </summary>
+        </member>
+        <member name="F:cModLoader.Accessibility.MessageBoxIcon.cModLoader">
+            <summary> The cModLoader icon, added because i can. </summary>
+        </member>
+        <member name="M:cModLoader.Accessibility.Show(System.String,System.String,System.Windows.Forms.MessageBoxButtons,System.Windows.Forms.MessageBoxIcon)">
+            <summary>
+            <para>Works the same as <see cref="M:System.Windows.Forms.MessageBox.Show(System.String,System.String,System.Windows.Forms.MessageBoxButtons,System.Windows.Forms.MessageBoxIcon)"/></para>
+            <para>WARNING: Creates a thread to work properly. See <see cref="M:cModLoader.Window.Window.Open(System.Boolean,System.Boolean)"/> for more info on why. </para>
+            </summary>
+        </member>
+        <member name="M:cModLoader.Accessibility.ShowMessageBox(System.String,System.String,System.String[],cModLoader.Accessibility.MessageBoxIcon)">
+            <summary>
+            <para>See <see cref="!:ShowMessageBox(string[], string, string[], MessageBoxIcon)"/></para>
+            <para>WARNING: Creates a thread to work properly. See <see cref="M:cModLoader.Window.Window.Open(System.Boolean,System.Boolean)"/> for more info on why. </para>
+            </summary>
+        </member>
+        <member name="M:cModLoader.Accessibility.ShowMessageBox(System.String[],System.String,System.String[],cModLoader.Accessibility.MessageBoxIcon,System.Boolean)">
+            <summary>
+            <para>Displays a message box with more customization then the normal <see cref="T:System.Windows.Forms.MessageBox"/>, this was needed because Linux and macOS do not give the needed assemblies to use it.</para>
+            <para>Works with SDL2 but is limited and may not work as you'd want.</para>
+            <para>WARNING: Creates a thread to work properly. See <see cref="M:cModLoader.Window.Window.Open(System.Boolean,System.Boolean)"/> for more info on why. </para>
+            <para><paramref name="blocking"/> was used for testing, keep as <see langword="true"/>.</para>
+            <para><paramref name="blocking"/> was used for testing, keep as <see langword="true"/>.</para>
+            </summary>
+        </member>
+        <member name="M:cModLoader.Accessibility.DirectorySearch(System.String,System.Boolean@,System.String)">
+            <summary>
+            <para>Replacement for <see cref="T:System.Windows.Forms.FileDialog"/> (or whatever it is) that works on Windows and Linux (and probably macOS)</para>
+            <para>Does not work with SDL2 on Linux. </para>
+            <para>WARNING: Creates a thread to work properly. See <see cref="M:cModLoader.Window.Window.Open(System.Boolean,System.Boolean)"/> for more info on why. </para>
+            </summary>
+        </member>
+        <member name="M:cModLoader.Accessibility.GetDefaultWindowsDirectorySearch(System.String,System.String@,System.String)">
+            <summary> Only use on windows, JIT is saving Linux from failing.<br/>This is scrap code, it does not work when a blocking window is open, it cant do what i wanted.</summary>
+        </member>
+        <member name="F:cModLoader.Path.DirectorySeparator">
+            <summary> Platform specific directory separator according to <see cref="F:System.IO.Path.DirectorySeparatorChar"/> </summary>
+        </member>
+        <member name="F:cModLoader.Path.LoadedTerrariaDirectory">
+            <summary> The directory at which Terraria is loaded from.<br/>If a virtual launch then it will be the same as <see cref="F:cModLoader.Path.VirtualTerrariaPath"/> </summary>
+        </member>
+        <member name="F:cModLoader.Path.RealTerrariaPathEnding">
+            <summary> <code>"\RealTerraria.exe"</code> </summary>
+        </member>
+        <member name="F:cModLoader.Path.TerrariaPathEnding">
+            <summary> <code>"\Terraria.exe"</code> </summary>
+        </member>
+        <member name="F:cModLoader.Path.VirtualTerrariaPath">
+            <summary> Path where terraria was virtually launched from. </summary>
+        </member>
+        <member name="M:cModLoader.Path.GetCurrentPath">
+            <summary> Gets and returns the current executing assemblies path, this is always the actual cModLoader exe (This includes the file name and path)<br/>Returns <c>...\Terraria\RealTerraria.exe</c> or <c>...\Terraria\cModLoader.exe</c> if running virtually. </summary>
+        </member>
+        <member name="M:cModLoader.Path.GetCurrentcModLoaderFolder">
+            <summary> Returns the <c>...\Terraria\cModLoader</c> folder path.</summary>
+        </member>
+        <member name="M:cModLoader.Path.GetCurrentModsFolder">
+            <summary> Returns the <c>...\Terraria\cModLoader\Mods</c> folder path.</summary>
+        </member>
+        <member name="M:cModLoader.Path.GetCurrentConfigsFolder">
+            <summary> Returns the <c>...\Terraria\cModLoader\Config</c> folder path.</summary>
+        </member>
+        <member name="M:cModLoader.Path.GetFromDirectory(System.String,System.Boolean@)">
+            <summary> Gets the full file path from a name from the current directory.<br/>Will trim and starting directory separators from <paramref name="fileName"/>. </summary>
+        </member>
+        <member name="M:cModLoader.Path.GetCurrentFolder">
+            <summary> Returns the current folder cModLoader is executing from. This is NOT the path terraria is in. <para>This includes the last path separator. this will retune something like <code>C:\Path\To\Directory\</code></para> </summary>
+        </member>
+        <member name="M:cModLoader.Path.FindTerrariaGlobally(System.String@,System.String@)">
+            <summary>
+            Tries to get the terraria directory (currently only works on windows). This will search every drive for a standard steam directory. These paths will include the file name.<br/>
+            </summary>
+        </member>
+        <member name="M:cModLoader.Path.CopyFile(System.String,System.String,System.Boolean)">
+            <summary> Copies a file from one place to another. </summary> <returns> Whether or not the file was copied. </returns>
+        </member>
+        <member name="M:cModLoader.Path.GetName(System.String)">
+            <summary> Gets the name of the file or directory. Expands to <see cref="M:System.IO.Path.GetFileName(System.String)"/> </summary>
+        </member>
+        <member name="M:cModLoader.Path.GoBack(System.String)">
+            <summary> Returns the sub directory. Will end with backslash.<para>Eg. "C:\Some\Directory\" becomes "C:\Some\"</para><para>Eg. "C:\Some\Directory\File.txt" becomes "C:\Some\Directory\"</para> </summary>
+        </member>
+        <member name="M:cModLoader.Path.EnsureFolder(System.String,System.Boolean@)">
+            <summary> Ensure a folder exists. Creates one if it does not exist. </summary>
+        </member>
+    </members>
+</doc>

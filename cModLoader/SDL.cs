@@ -10,8 +10,7 @@ namespace cModLoader.FNA
 {
     /// <summary>
     /// This was taken from the FNA.dll. its license i think allows me to just copy there code to interact with SDL.
-    /// <para>https://opensource.org/license/ms-pl-html</para>
-    /// <para>https://github.com/FNA-XNA/FNA/blob/master/licenses/LICENSE</para>
+    /// <para>Actual Source: <see href="https://github.com/flibitijibibo/SDL3-CS/blob/main/SDL3/SDL3.Core.cs"/></para>
     /// </summary>
     public static class FNA_SDL3
     {
@@ -9806,8 +9805,7 @@ namespace cModLoader.FNA
     }
     /// <summary>
     /// This was taken from the FNA.dll. its license i think allows me to just copy there code to interact with SDL.
-    /// <para>https://opensource.org/license/ms-pl-html</para>
-    /// <para>https://github.com/FNA-XNA/FNA/blob/master/licenses/LICENSE</para>
+    /// <para>Actual Source: <see href="https://github.com/flibitijibibo/SDL2-CS/blob/master/src/SDL2.cs"/></para>
     /// </summary>
     public static class FNA_SDL2
     {

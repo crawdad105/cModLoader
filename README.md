@@ -23,7 +23,8 @@ Contact: Use whatever is convenient.
 > There may be versions that have issues, report them if you want them fixed.<br/>
 
 > [!NOTE]
-> This is not supposed to rivel tModLoader or TerrariaModder however if enough people want features like ways to add items, NPCs and more i may consider it. Its not necessarily hard to do but keep in mind i would need seamless integration for every versions of Terraria and to understand how every version of Terraria works on Windows and Linux (and maybe MaxOS in the future).
+> This is not supposed to rivel tModLoader or TerrariaModder however if enough people want features like ways to add items, NPCs and more i may consider it.<br/>
+> Its not necessarily hard to do but keep in mind i would need seamless integration for every versions of Terraria and to understand how every version of Terraria works on Windows and Linux (and maybe MacOS in the future).
 
 > [!CAUTION]
 > "Raw Hooks" (hooks that do not require patches) are used for almost everything, its how this can exist without needed IL patches, however they are objectively less stable then normal IL parches as newer Terraria versions can break them and they rely heavily on a Xna or FNA, if those change they could break. If it becomes an issue i may consider switching to only using patches as they are safter and more stable.
